@@ -15,10 +15,9 @@ export default function Navbar({ usuario, onLoginClick, onLogout }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Se o link for clicado fora da Home (ex: na página de Termos), primeiro navega
-  // pra Home e só então rola até a seção — senão o #hash não existe na página atual.
+  // Função para rolar suavemente para uma seção da página se estiver em uma pagina diferente
   function irParaSecao(e, id) {
-    if (naHome) return; // deixa o <a href="#id"> normal cuidar do scroll
+    if (naHome) return;
     e.preventDefault();
     navigate('/');
     setTimeout(() => {

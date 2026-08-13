@@ -7,12 +7,10 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
   const mapRef = useRef(null);
   const markersLayerRef = useRef(null);
 
-  // cria o mapa uma única vez (equivalente ao configurarMapa() do script.js)
+  // Criar o mapa
   useEffect(() => {
     mapRef.current = L.map(mapDivRef.current, {
-      // Com scrollWheelZoom ligado, rolar a página com o mouse em cima do mapa
-      // dá zoom em vez de rolar a página — desliga isso; o zoom continua
-      // funcionando normalmente pelos botões +/- e por pinça no touch.
+      // Com scrollWheelZoom libera rodar a pagina mesmo por cima do mapa, mas o zoom com scroll do mouse fica desativado.
       scrollWheelZoom: false,
     }).setView([-3.73, -38.52], 11);
     markersLayerRef.current = L.layerGroup().addTo(mapRef.current);
@@ -26,7 +24,7 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
     };
   }, []);
 
-  // equivalente a atualizarMarcadores(lista) — roda toda vez que a lista de praias mudar
+  // Adicionar marcadores das praias
   useEffect(() => {
     if (!markersLayerRef.current) return;
     markersLayerRef.current.clearLayers();
@@ -37,7 +35,7 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
     });
   }, [praias, onSelecionarPraia]);
 
-  // equivalente ao map.flyTo(...) dentro de selecionarPraia()
+  // Focar na praia selecionada
   useEffect(() => {
     if (praiaFoco && mapRef.current) {
       mapRef.current.flyTo([praiaFoco.latitude, praiaFoco.longitude], 13, { animate: true });

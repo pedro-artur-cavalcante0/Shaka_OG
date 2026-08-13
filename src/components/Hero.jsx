@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-// equivalente ao <script> que gerava as 28 partículas no HTML original
+// Gerador de Particulas
 function gerarParticulas(qtd = 28) {
   return Array.from({ length: qtd }).map((_, i) => ({
     id: i,
@@ -13,7 +13,7 @@ function gerarParticulas(qtd = 28) {
 }
 
 export default function Hero() {
-  // useMemo garante que as partículas só são geradas uma vez (não a cada render)
+  // const pra limitar geração e optimizar:
   const particulas = useMemo(() => gerarParticulas(), []);
 
   function scrollParaSpots() {
@@ -72,8 +72,10 @@ export default function Hero() {
           <a href="#servicos" className="btn-ghost">Ver Serviços</a>
         </div>
 
+          {/* Area de estatísticas */}
         <div className="hero-stats">
           <div className="hero-stat">
+            {/*Popular com dados reais dps*/}
             <span className="hero-stat-number">20+</span>
             <span className="hero-stat-label">Spots</span>
           </div>

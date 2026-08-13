@@ -1,8 +1,4 @@
 // lib/weather.js
-// Mesma lógica do script.js original (WMO_CODES, estimarOndas, calcularScoreSurf,
-// grausParaDirecao, carregarClima) — a diferença é que carregarClima() agora
-// RETORNA um objeto com os dados, em vez de escrever direto no DOM.
-// Quem chama essa função decide o que fazer com o resultado (ex: guardar em um useState).
 
 export const WMO_CODES = {
   0: '☀️|Céu limpo', 1: '🌤|Poucas nuvens', 2: '⛅|Parcialmente nublado', 3: '☁️|Nublado',

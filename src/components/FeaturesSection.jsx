@@ -53,6 +53,7 @@ export default function FeaturesSection({ totalPraias, totalServicos }) {
         ))}
       </div>
 
+        {/*Area de estatísticas*/}
       <div className="stats-strip">
         <div className="stats-strip-item">
           <span className="stats-strip-number">{totalPraias > 0 ? totalPraias : '—'}</span>

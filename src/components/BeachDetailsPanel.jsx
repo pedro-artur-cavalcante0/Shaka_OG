@@ -25,7 +25,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   const [eventoDescricao, setEventoDescricao] = useState('');
   const [eventoData, setEventoData] = useState('');
 
-  // dispara toda vez que troca de praia — igual ao selecionarPraia() original
+  // Atualiza clima, análise, eventos e comentários quando a praia muda
   useEffect(() => {
     if (!praia) return;
 
@@ -44,7 +44,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
 
     carregarEventos();
     carregarComentarios();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Gerar resumo IA localmente com base nos comentários
   }, [praia?.id]);
 
   async function carregarEventos() {

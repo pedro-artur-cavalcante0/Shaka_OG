@@ -1,5 +1,4 @@
 // lib/resumoIA.js
-// Mesma lógica de analisarComentariosLocal / contarOcorrenciasIA do script.js original.
 
 function contarOcorrenciasIA(texto, palavras) {
   return palavras.reduce((total, p) => total + (texto.includes(p) ? 1 : 0), 0);

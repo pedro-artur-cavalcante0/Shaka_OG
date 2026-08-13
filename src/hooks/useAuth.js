@@ -2,10 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { fazerRequisicaoSupabase } from '../lib/supabase.js';
 
 export function useAuth(mostrarToast) {
-  const [usuario, setUsuario] = useState(null); // objeto do usuário logado, ou null
-  const [usuarioId, setUsuarioId] = useState(null); // id anônimo ou do usuário logado
+  const [usuario, setUsuario] = useState(null); // Estado para armazenar o usuário logado ou anônimo
+  const [usuarioId, setUsuarioId] = useState(null); // ID do usuário anônimo ou logado
 
-  // equivalente ao verificarUsuarioLogado() do script.js, rodando uma vez ao montar
+  // Carrega usuário do localStorage ou cria um novo ID de usuário anônimo
   useEffect(() => {
     const salvo = localStorage.getItem('shakaUsuario');
     if (salvo) {

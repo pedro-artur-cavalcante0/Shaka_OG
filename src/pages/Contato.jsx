@@ -13,7 +13,7 @@ export default function Contato() {
       <div className="static-contact-grid">
         <div className="static-contact-card">
           <strong>Email</strong>
-          <a href="mailto:contato@shaka-app.com.br">contato@shaka-app.com.br</a>
+          <a href="mailto:app.shaka.suporte@gmail.com">app.shaka.suporte@gmail.com</a>
         </div>
         <div className="static-contact-card">
           <strong>Instagram</strong>
@@ -25,7 +25,7 @@ export default function Contato() {
         </div>
         <div className="static-contact-card">
           <strong>Reportar problema</strong>
-          <span>Encontrou um erro na plataforma? Descreva o que aconteceu no email acima.</span>
+          <span>Encontrou um erro na plataforma? Descreva o que aconteceu: <a href="mailto:app.shaka.suporte@gmail.com">Clique Aqui!</a>.</span>
         </div>
       </div>
     </div>

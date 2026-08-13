@@ -1,6 +1,4 @@
 // lib/supabase.js
-// Mesma lógica da função fazerRequisicaoSupabase original,
-// só que agora exportada como módulo em vez de função global.
 
 const SUPABASE_URL = 'https://lrzofimngusbcwlqbsts.supabase.co';
 const SUPABASE_ANON_KEY =
