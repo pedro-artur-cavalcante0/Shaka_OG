@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { fazerRequisicaoSupabase } from './lib/supabase.js';
 import { useToast } from './hooks/useToast.js';
 import { useAuth } from './hooks/useAuth.js';
 
-import Navbar from './components/Navbar.jsx';
-import Hero from './components/Hero.jsx';
-import SpotsSection from './components/SpotsSection.jsx';
-import ServicosSection from './components/ServicosSection.jsx';
-import AuthModal from './components/AuthModal.jsx';
-import ServicoModal from './components/ServicoModal.jsx';
-import Toast from './components/Toast.jsx';
+import Layout from './components/Layout.jsx';
+import Home from './pages/Home.jsx';
+import Termos from './pages/Termos.jsx';
+import Privacidade from './pages/Privacidade.jsx';
+import Contato from './pages/Contato.jsx';
 
 export default function App() {
   const { toast, mostrarToast } = useToast();
@@ -33,42 +32,43 @@ export default function App() {
     carregarServicos();
   }, [carregarServicos]);
 
+  const layoutProps = {
+    usuario,
+    toast,
+    modalLoginAberto,
+    modalServicoAberto,
+    onLoginClick: () => setModalLoginAberto(true),
+    onLogout: logout,
+    onFecharLogin: () => setModalLoginAberto(false),
+    onFecharServico: () => setModalServicoAberto(false),
+    autenticar,
+    onServicoCriado: carregarServicos,
+    mostrarToast,
+  };
+
   return (
-    <>
-      <Navbar usuario={usuario} onLoginClick={() => setModalLoginAberto(true)} onLogout={logout} />
-
-      <Hero />
-
-      <SpotsSection
-        praias={praias}
-        usuario={usuario}
-        usuarioId={usuarioId}
-        onExigirLogin={() => setModalLoginAberto(true)}
-        mostrarToast={mostrarToast}
-      />
-
-      <ServicosSection
-        servicos={servicos}
-        usuario={usuario}
-        onNovoServico={() => setModalServicoAberto(true)}
-        onExigirLogin={() => setModalLoginAberto(true)}
-      />
-
-      <AuthModal aberto={modalLoginAberto} onFechar={() => setModalLoginAberto(false)} autenticar={autenticar} />
-
-      <ServicoModal
-        aberto={modalServicoAberto}
-        onFechar={() => setModalServicoAberto(false)}
-        onServicoCriado={carregarServicos}
-        mostrarToast={mostrarToast}
-      />
-
-      <Toast toast={toast} />
-
-      <footer className="footer">
-        <span className="brand-wave">~</span>
-        <span className="footer-text">SHAKA · Picos, Eventos & Serviços · Ceará, BR</span>
-      </footer>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Layout {...layoutProps}>
+              <Home
+                praias={praias}
+                servicos={servicos}
+                usuario={usuario}
+                usuarioId={usuarioId}
+                onExigirLogin={() => setModalLoginAberto(true)}
+                onNovoServico={() => setModalServicoAberto(true)}
+                mostrarToast={mostrarToast}
+              />
+            </Layout>
+          }
+        />
+        <Route path="/termos" element={<Layout {...layoutProps}><Termos /></Layout>} />
+        <Route path="/privacidade" element={<Layout {...layoutProps}><Privacidade /></Layout>} />
+        <Route path="/contato" element={<Layout {...layoutProps}><Contato /></Layout>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
