@@ -162,6 +162,100 @@ export function calcularScoreSurf({
   };
 }
 
+function descricaoGenerica(score) {
+  if (score < 2) return 'Sem condições';
+  if (score < 4) return 'Fraco';
+  if (score < 5.5) return 'Razoável';
+  if (score < 7) return 'Bom';
+  if (score < 8.5) return 'Muito bom';
+  if (score < 9.5) return 'Excelente';
+  return 'Épico 🤙';
+}
+
+export function calcularScoreKitesurf({ ventoKmh, alturaOnda, wmoCode }) {
+  let score = 0;
+
+  if (ventoKmh < 10) score += 0.5;
+  else if (ventoKmh < 14) score += 2.0;
+  else if (ventoKmh < 18) score += 4.0;
+  else if (ventoKmh < 25) score += 6.0;
+  else if (ventoKmh < 32) score += 5.2;
+  else if (ventoKmh < 40) score += 3.5;
+  else if (ventoKmh < 50) score += 1.5;
+  else score += 0.3;
+
+  if (alturaOnda < 0.3) score += 1.2;
+  else if (alturaOnda < 1.2) score += 2.0;
+  else if (alturaOnda < 2.0) score += 1.3;
+  else score += 0.4;
+
+  if ([0, 1, 2, 3].includes(wmoCode)) score += 2;
+  else if ([45, 48, 51, 53, 61, 63, 80, 81].includes(wmoCode)) score += 1;
+  else score -= 3;
+
+  score = Math.round(Math.max(0, Math.min(10, score)) * 10) / 10;
+  return { score, desc: descricaoGenerica(score) };
+}
+
+export function calcularScoreWindsurf({ ventoKmh, alturaOnda, wmoCode }) {
+  let score = 0;
+
+  if (ventoKmh < 8) score += 0.5;
+  else if (ventoKmh < 12) score += 2.2;
+  else if (ventoKmh < 16) score += 4.0;
+  else if (ventoKmh < 22) score += 5.0;
+  else if (ventoKmh < 28) score += 4.3;
+  else if (ventoKmh < 36) score += 3.0;
+  else if (ventoKmh < 45) score += 1.4;
+  else score += 0.3;
+
+  if (alturaOnda < 0.3) score += 1.5;
+  else if (alturaOnda < 1.5) score += 3.0;
+  else if (alturaOnda < 2.5) score += 2.2;
+  else score += 1.0;
+
+  if ([0, 1, 2, 3].includes(wmoCode)) score += 2;
+  else if ([45, 48, 51, 53, 61, 63, 80, 81].includes(wmoCode)) score += 1;
+  else score -= 3;
+
+  score = Math.round(Math.max(0, Math.min(10, score)) * 10) / 10;
+  return { score, desc: descricaoGenerica(score) };
+}
+
+export function calcularScoreSUP({ ventoKmh, alturaOnda, wmoCode }) {
+  let score = 0;
+
+  if (ventoKmh < 8) score += 6.0;
+  else if (ventoKmh < 14) score += 4.5;
+  else if (ventoKmh < 20) score += 2.5;
+  else if (ventoKmh < 28) score += 1.0;
+  else score += 0.2;
+
+  if (alturaOnda < 0.4) score += 2.0;
+  else if (alturaOnda < 0.8) score += 1.4;
+  else if (alturaOnda < 1.3) score += 0.6;
+  else score += 0.1;
+
+  if ([0, 1, 2, 3].includes(wmoCode)) score += 2;
+  else if ([45, 48, 51, 53, 61, 63, 80, 81].includes(wmoCode)) score += 1;
+  else score -= 2;
+
+  score = Math.round(Math.max(0, Math.min(10, score)) * 10) / 10;
+  return { score, desc: descricaoGenerica(score) };
+}
+
+export const MODALIDADES = {
+  surf: { label: 'Surf', emoji: '🏄', calcular: calcularScoreSurf },
+  kitesurf: { label: 'Kitesurf', emoji: '🪁', calcular: calcularScoreKitesurf },
+  windsurf: { label: 'Windsurf', emoji: '⛵', calcular: calcularScoreWindsurf },
+  sup: { label: 'Stand Up Paddle', emoji: '🧘', calcular: calcularScoreSUP },
+};
+
+export function calcularScore(modalidade, dados) {
+  const config = MODALIDADES[modalidade] ?? MODALIDADES.surf;
+  return config.calcular(dados);
+}
+
 function fetchComTimeout(url, ms = 8000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -178,7 +272,7 @@ function horaIndexDeIso(iso) {
   return parseInt(iso.split('T')[1]?.slice(0, 2) ?? '0', 10);
 }
 
-function calcularMelhorPeriodo(horas) {
+export function calcularMelhorPeriodo(horas) {
   if (!horas.length) return null;
 
   const ordenadas = [...horas]
@@ -405,43 +499,32 @@ export async function carregarClima(lat, lon) {
     }
   }
 
-  // ---- Melhor período pra surfar (score hora a hora, 5h-19h) ----
-  let melhorPeriodo = null;
+  let horasBrutas = [];
   if (atm.hourly && Array.isArray(atm.hourly.time)) {
-    const horasScore = atm.hourly.time.map((t, i) => {
+    horasBrutas = atm.hourly.time.map((t, i) => {
       const horaIdx = horaIndexDeIso(t);
       const wmoH = atm.hourly.weather_code?.[i] ?? wmoCode;
       const ventoH = atm.hourly.wind_speed_10m?.[i] ?? ventoKmh;
 
       let altH, perH;
-     const indiceOnda = encontrarIndicePorHora(
-  ondasHorario?.time,
-  t
-);
+      const indiceOnda = encontrarIndicePorHora(ondasHorario?.time, t);
 
-if (
-  indiceOnda >= 0 &&
-  ondasHorario?.wave_height?.[indiceOnda] != null
-) {
-  altH = ondasHorario.wave_height[indiceOnda];
-
-  perH =
-    ondasHorario.wave_period?.[indiceOnda] ??
-    periodoOnda;
-} else {
+      if (indiceOnda >= 0 && ondasHorario?.wave_height?.[indiceOnda] != null) {
+        altH = ondasHorario.wave_height[indiceOnda];
+        perH = ondasHorario.wave_period?.[indiceOnda] ?? periodoOnda;
+      } else {
         const est = estimarOndas(ventoH);
         altH = est.alturaOnda;
         perH = est.periodoOnda;
       }
 
-      const { score: s, desc: d } = calcularScoreSurf({
-        alturaOnda: altH, periodoOnda: perH, ventoKmh: ventoH, wmoCode: wmoH,
-      });
-      return { horaIdx, score: s, desc: d };
+      return { horaIdx, alturaOnda: altH, periodoOnda: perH, ventoKmh: ventoH, wmoCode: wmoH };
     }).filter(h => h.horaIdx >= 5 && h.horaIdx <= 19);
-
-    melhorPeriodo = calcularMelhorPeriodo(horasScore);
   }
+
+  const melhorPeriodo = horasBrutas.length
+    ? calcularMelhorPeriodo(horasBrutas.map((h) => ({ horaIdx: h.horaIdx, ...calcularScoreSurf(h) })))
+    : null;
 
   return {
     erro: false,
@@ -450,6 +533,7 @@ if (
     temp: Math.round(temp),
     hora,
     ventoKmh: Math.round(ventoKmh),
+    wmoCode,
     dirVentoTexto: grausParaDirecao(dirVento),
     rajadaKmh: Math.round(rajadaKmh),
     alturaOnda,
@@ -467,5 +551,6 @@ if (
     mareBaixa,
     mareEstimada,
     melhorPeriodo,
+    horasBrutas,
   };
 }
