@@ -6,9 +6,6 @@ const CATEGORIAS = [
   { tipo: 'aluguel', label: '🏄 Aluguel' },
   { tipo: 'aula', label: '🎓 Aula de Surf' },
   { tipo: 'reparo', label: '🔧 Reparo' },
-  { tipo: 'hospedagem', label: '🏠 Hospedagem' },
-  { tipo: 'alimentacao', label: '🍽️ Alimentação' },
-  { tipo: 'transporte', label: '🚐 Transporte' },
   { tipo: 'fotografia', label: '📷 Fotografia' },
   { tipo: 'outro', label: '📌 Outro' },
 ];
@@ -17,7 +14,7 @@ export default function ServicosSection({ servicos, usuario, onNovoServico, onEx
   const [tipoAtivo, setTipoAtivo] = useState('');
   const [busca, setBusca] = useState('');
 
-  // equivalente a filtrarServicos(tipoAtivo) do script.js
+  // Filtro de serviços
   const servicosFiltrados = useMemo(() => {
     const termo = busca.toLowerCase().trim();
     return servicos.filter((s) => {
