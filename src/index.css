@@ -1,6 +1,5 @@
 /* =============================================
    SHAKA — shaka.css
-   Design System: Ocean Dark · Bebas Neue
    ============================================= */
 
 /* ── VARIABLES ── */
@@ -59,8 +58,6 @@ a { text-decoration: none; color: inherit; }
 .navbar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  /* Precisa ficar acima de QUALQUER elemento da página, inclusive dos controles
-     do Leaflet (que também usam z-index alto por padrão). 2000 garante isso. */
   z-index: 2000;
   height: var(--nav-h);
   display: grid;
@@ -165,8 +162,6 @@ a { text-decoration: none; color: inherit; }
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* padding-bottom maior reserva o espaço onde o hero-scroll-hint fica fixo,
-     evitando que ele sobreponha hero-actions/hero-stats em telas baixas */
   padding: var(--nav-h) 24px 120px;
 }
 
