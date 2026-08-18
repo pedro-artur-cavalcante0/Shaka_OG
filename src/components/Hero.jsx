@@ -1,20 +1,34 @@
 import { useMemo } from 'react';
 
-// Gerador de Particulas
-function gerarParticulas(qtd = 28) {
+// Bolhas de espuma do mar subindo no fundo do Hero — identidade de praia/surf.
+function gerarBolhas(qtd = 14) {
   return Array.from({ length: qtd }).map((_, i) => ({
     id: i,
     left: `${Math.random() * 100}%`,
-    top: `${20 + Math.random() * 70}%`,
-    dur: `${4 + Math.random() * 6}s`,
+    top: `${58 + Math.random() * 37}%`, // nasce perto da linha das ondas
+    dur: `${5 + Math.random() * 6}s`,
     delay: `${Math.random() * 6}s`,
-    size: `${1 + Math.random() * 2.5}px`,
+    size: `${4 + Math.random() * 7}px`,
+    wobble: `${6 + Math.random() * 14}px`,
+    clara: Math.random() > 0.6,
+  }));
+}
+
+// Pontinhos de luz reluzindo na crista da onda (sol batendo na água)
+function gerarBrilhos(qtd = 9) {
+  return Array.from({ length: qtd }).map((_, i) => ({
+    id: i,
+    left: `${4 + Math.random() * 92}%`,
+    top: `${64 + Math.random() * 14}%`,
+    dur: `${2.5 + Math.random() * 2.5}s`,
+    delay: `${Math.random() * 4}s`,
+    size: `${2 + Math.random() * 3}px`,
   }));
 }
 
 export default function Hero() {
-  // const pra limitar geração e optimizar:
-  const particulas = useMemo(() => gerarParticulas(), []);
+  const bolhas = useMemo(() => gerarBolhas(), []);
+  const brilhos = useMemo(() => gerarBrilhos(), []);
 
   function scrollParaSpots() {
     document.getElementById('spots')?.scrollIntoView({ behavior: 'smooth' });
@@ -23,21 +37,44 @@ export default function Hero() {
   return (
     <section className="hero" id="hero">
       <div className="hero-bg">
-        <div className="hero-wave hero-wave--1" />
-        <div className="hero-wave hero-wave--2" />
-        <div className="hero-wave hero-wave--3" />
-        <div className="hero-particles">
-          {particulas.map((p) => (
-            <div
-              key={p.id}
-              className="particle"
+        {/* Camadas de onda com parallax — mais ao fundo = mais lenta, mais suave e mais escura */}
+        <div className="ocean-layer ocean-layer--back" />
+        <div className="ocean-layer ocean-layer--mid" />
+        <div className="light-sweep" />
+        <div className="ocean-layer ocean-layer--front" />
+
+        {/* Brilhos de luz refletindo na crista das ondas */}
+        <div className="hero-glints" aria-hidden="true">
+          {brilhos.map((g) => (
+            <span
+              key={g.id}
+              className="glint"
               style={{
-                left: p.left,
-                top: p.top,
-                '--dur': p.dur,
-                '--delay': p.delay,
-                width: p.size,
-                height: p.size,
+                left: g.left,
+                top: g.top,
+                width: g.size,
+                height: g.size,
+                '--dur': g.dur,
+                '--delay': g.delay,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Bolhas de espuma subindo */}
+        <div className="hero-particles">
+          {bolhas.map((b) => (
+            <div
+              key={b.id}
+              className={`bolha${b.clara ? ' bolha--clara' : ''}`}
+              style={{
+                left: b.left,
+                top: b.top,
+                '--dur': b.dur,
+                '--delay': b.delay,
+                '--wobble': b.wobble,
+                width: b.size,
+                height: b.size,
               }}
             />
           ))}
@@ -72,10 +109,10 @@ export default function Hero() {
           <a href="#servicos" className="btn-ghost">Ver Serviços</a>
         </div>
 
-          {/* Area de estatísticas */}
+        {/* Área de estatísticas */}
         <div className="hero-stats">
           <div className="hero-stat">
-            {/*Popular com dados reais dps*/}
+            {/* Popular com dados reais dps */}
             <span className="hero-stat-number">20+</span>
             <span className="hero-stat-label">Spots</span>
           </div>
