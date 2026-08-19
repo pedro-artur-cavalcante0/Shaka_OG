@@ -1,4 +1,7 @@
-function GraficoMare({ mare, mareAlta, mareBaixa, estimado }) {
+import { useMemo, useState } from 'react';
+import { calcularScore, calcularMelhorPeriodo, MODALIDADES } from '../lib/weather.js';
+
+function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel }) {
   if (!mare || mare.length < 2) {
     return (
       <div className="clima-mare-indisponivel">
@@ -118,6 +121,17 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado }) {
       )
     : -1;
 
+  let idxJanelaIni = -1;
+  let idxJanelaFim = -1;
+
+  if (janela) {
+    const horaIni = parseInt(janela.inicio, 10);
+    const horaFim = parseInt(janela.fim, 10);
+    idxJanelaIni = mare.findIndex(p => p.horaIdx === horaIni);
+    idxJanelaFim = mare.findIndex(p => p.horaIdx === horaFim);
+    if (idxJanelaFim < 0) idxJanelaFim = mare.length - 1;
+  }
+
   // ------------------------------------------------------------
   // Linhas de referência
   // ------------------------------------------------------------
@@ -232,6 +246,31 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado }) {
             y2={y(min)}
             stroke="rgba(148,163,184,0.10)"
           />
+
+          {idxJanelaIni >= 0 && idxJanelaFim >= idxJanelaIni && (
+            <>
+              <rect
+                x={pontos[idxJanelaIni].x}
+                y={padTop}
+                width={pontos[idxJanelaFim].x - pontos[idxJanelaIni].x}
+                height={graphH}
+                fill="rgba(251,191,36,0.10)"
+                stroke="rgba(251,191,36,0.35)"
+                strokeDasharray="4 4"
+              />
+
+              <text
+                x={(pontos[idxJanelaIni].x + pontos[idxJanelaFim].x) / 2}
+                y={padTop - 6}
+                textAnchor="middle"
+                fill="#fbbf24"
+                fontSize="9"
+                fontWeight="700"
+              >
+                {janelaLabel || 'MELHOR JANELA'}
+              </text>
+            </>
+          )}
 
           {/* Área */}
 
@@ -510,6 +549,35 @@ export default function WeatherWidget({ carregando, clima }) {
 
   const fontOnda = clima.estimado ? ' (est.)' : '';
 
+  return <WeatherWidgetConteudo clima={clima} fontOnda={fontOnda} />;
+}
+
+function WeatherWidgetConteudo({ clima, fontOnda }) {
+  const [modalidade, setModalidade] = useState('surf');
+  const modalidadeAtual = MODALIDADES[modalidade];
+
+  const scoreAtual = useMemo(
+    () =>
+      calcularScore(modalidade, {
+        alturaOnda: clima.alturaOnda,
+        periodoOnda: clima.periodoOnda,
+        ventoKmh: clima.ventoKmh,
+        wmoCode: clima.wmoCode,
+      }),
+    [modalidade, clima.alturaOnda, clima.periodoOnda, clima.ventoKmh, clima.wmoCode]
+  );
+
+  const melhorPeriodoAtual = useMemo(() => {
+    if (!clima.horasBrutas || !clima.horasBrutas.length) return null;
+    const horasComScore = clima.horasBrutas.map((h) => ({
+      horaIdx: h.horaIdx,
+      ...calcularScore(modalidade, h),
+    }));
+    return calcularMelhorPeriodo(horasComScore);
+  }, [modalidade, clima.horasBrutas]);
+
+  const scoreColor = scoreAtual.score >= 7 ? '#2dd4bf' : scoreAtual.score >= 5 ? '#f59e0b' : '#ef4444';
+
   return (
     <div className="clima-painel">
       <div className="clima-conteudo">
@@ -552,6 +620,19 @@ export default function WeatherWidget({ carregando, clima }) {
           </div>
         </div>
 
+        <div className="clima-modalidade-selector">
+          {Object.entries(MODALIDADES).map(([chave, config]) => (
+            <button
+              key={chave}
+              type="button"
+              className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
+              onClick={() => setModalidade(chave)}
+            >
+              <span>{config.emoji}</span> {config.label}
+            </button>
+          ))}
+        </div>
+
         <div className="clima-secao">
           <span className="clima-secao-titulo">Maré do dia</span>
           <GraficoMare
@@ -559,10 +640,12 @@ export default function WeatherWidget({ carregando, clima }) {
             mareAlta={clima.mareAlta}
             mareBaixa={clima.mareBaixa}
             estimado={clima.mareEstimada}
+            janela={melhorPeriodoAtual}
+            janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
           />
         </div>
 
-    {clima.melhorPeriodo && (
+    {melhorPeriodoAtual && (
   <div className="clima-melhor-periodo">
 
     <div className="clima-melhor-header">
@@ -570,7 +653,7 @@ export default function WeatherWidget({ carregando, clima }) {
       <div className="clima-melhor-title-wrap">
 
         <div className="clima-melhor-icon">
-          🏄
+          {modalidadeAtual.emoji}
         </div>
 
         <div>
@@ -579,7 +662,7 @@ export default function WeatherWidget({ carregando, clima }) {
           </span>
 
           <span className="clima-melhor-title">
-            Hora mais favorável para surfar
+            Hora mais favorável para {modalidadeAtual.label.toLowerCase()}
           </span>
         </div>
 
@@ -587,7 +670,7 @@ export default function WeatherWidget({ carregando, clima }) {
 
       <div className="clima-melhor-score">
         <strong>
-          {clima.melhorPeriodo.score.toFixed(1)}
+          {melhorPeriodoAtual.score.toFixed(1)}
         </strong>
 
         <span>/10</span>
@@ -599,7 +682,7 @@ export default function WeatherWidget({ carregando, clima }) {
     <div className="clima-melhor-horario">
 
       <div className="clima-hora">
-        {clima.melhorPeriodo.inicio}
+        {melhorPeriodoAtual.inicio}
       </div>
 
       <div className="clima-horario-linha">
@@ -609,7 +692,7 @@ export default function WeatherWidget({ carregando, clima }) {
       </div>
 
       <div className="clima-hora">
-        {clima.melhorPeriodo.fim}
+        {melhorPeriodoAtual.fim}
       </div>
 
     </div>
@@ -618,13 +701,13 @@ export default function WeatherWidget({ carregando, clima }) {
     <div className="clima-melhor-bottom">
 
       <span className="clima-melhor-status">
-        {clima.melhorPeriodo.desc}
+        {melhorPeriodoAtual.desc}
       </span>
 
       <span className="clima-melhor-info">
         Janela de {(
-          parseInt(clima.melhorPeriodo.fim) -
-          parseInt(clima.melhorPeriodo.inicio)
+          parseInt(melhorPeriodoAtual.fim) -
+          parseInt(melhorPeriodoAtual.inicio)
         )} horas
       </span>
 
@@ -635,13 +718,13 @@ export default function WeatherWidget({ carregando, clima }) {
 
         <div className="clima-score-wrap">
           <div className="clima-score-label">
-            <span>Score para surf agora</span>
-            <span className="clima-score-num">{clima.score}/10</span>
+            <span>Score para {modalidadeAtual.label.toLowerCase()} agora</span>
+            <span className="clima-score-num">{scoreAtual.score}/10</span>
           </div>
           <div className="clima-score-bar">
-            <div className="clima-score-fill" style={{ width: `${clima.score * 10}%`, background: clima.scoreColor }} />
+            <div className="clima-score-fill" style={{ width: `${scoreAtual.score * 10}%`, background: scoreColor }} />
           </div>
-          <span className="clima-score-desc">{clima.scoreDesc}</span>
+          <span className="clima-score-desc">{scoreAtual.desc}</span>
         </div>
       </div>
     </div>
