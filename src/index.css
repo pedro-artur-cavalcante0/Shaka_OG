@@ -1024,6 +1024,22 @@ a {
 .clima-score-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.4s; }
 .clima-score-desc { font-size: 0.75rem; color: var(--text-2); }
 
+.clima-modalidade-selector {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 12px 16px; border-top: 1px solid var(--border);
+}
+.clima-modalidade-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 11px; border-radius: 99px;
+  background: rgba(148,163,184,0.08); border: 1px solid var(--border);
+  color: var(--text-3); font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.clima-modalidade-btn:hover { background: rgba(148,163,184,0.14); color: var(--text-2); }
+.clima-modalidade-btn.ativo {
+  background: rgba(45,212,191,0.14); border-color: rgba(45,212,191,0.4); color: var(--teal);
+}
+
 /* =============================================
    MARÉ — gráfico + alta/baixa + melhor janela
    CORRIGIDO: estava aninhado dentro de .clima-mare-chart
