@@ -1,0 +1,13 @@
+/* 1. Base e Configurações Globais */
+@import './styles/variables.css';
+@import './styles/animations.css';
+@import './styles/components/global.css';
+
+/* 2. Estilos dos Componentes */
+@import './styles/components/navbar.css';
+@import './styles/components/hero.css';
+@import './styles/components/sports.css';
+@import './styles/components/weather.css';
+@import './styles/components/services.css';
+@import './styles/components/modal.css';
+@import './styles/components/footer.css';
