@@ -10,7 +10,6 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
   // Criar o mapa
   useEffect(() => {
     mapRef.current = L.map(mapDivRef.current, {
-      // Com scrollWheelZoom libera rodar a pagina mesmo por cima do mapa, mas o zoom com scroll do mouse fica desativado.
       scrollWheelZoom: false,
     }).setView([-3.73, -38.52], 11);
     markersLayerRef.current = L.layerGroup().addTo(mapRef.current);
@@ -35,10 +34,15 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
     });
   }, [praias, onSelecionarPraia]);
 
-  // Focar na praia selecionada
+  // Focar na praia selecionada e recalcular dimensões
   useEffect(() => {
-    if (praiaFoco && mapRef.current) {
-      mapRef.current.flyTo([praiaFoco.latitude, praiaFoco.longitude], 13, { animate: true });
+    if (mapRef.current) {
+      setTimeout(() => {
+        mapRef.current?.invalidateSize();
+        if (praiaFoco) {
+          mapRef.current.flyTo([praiaFoco.latitude, praiaFoco.longitude], 13, { animate: true });
+        }
+      }, 300);
     }
   }, [praiaFoco]);
 
