@@ -1459,3 +1459,15 @@ a {
   .servicos-grid { grid-template-columns: 1fr; padding: 24px 20px; }
   .form-row { grid-template-columns: 1fr; }
 }
+.spots-body {
+  display: grid; 
+  grid-template-columns: 1fr 480px; /* Largura padrão expandida para 480px no desktop */
+  height: calc(100vh - 140px); 
+  min-height: 600px;
+  transition: grid-template-columns 0.35s ease-in-out; /* Transição suave */
+}
+
+/* Quando uma praia for clicada, a sidebar cresce e o mapa encolhe */
+.spots-body.has-selection {
+  grid-template-columns: 1fr 580px;
+}

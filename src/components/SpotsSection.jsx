@@ -9,13 +9,10 @@ export default function SpotsSection({ praias, usuario, usuarioId, onExigirLogin
   const [praiaSelecionada, setPraiaSelecionada] = useState(null);
   const painelRef = useRef(null);
 
-  // Localização do usuário e estado do filtro por distância
   const [userLocation, setUserLocation] = useState(null);
-  // 'carregando' | 'ok' | 'negado' | 'indisponivel'
   const [statusLocalizacao, setStatusLocalizacao] = useState('carregando');
   const [mostrarTodas, setMostrarTodas] = useState(false);
 
-  // Pede a localização assim que a página carrega.
   useEffect(() => {
     let cancelado = false;
     obterLocalizacaoUsuario()
@@ -26,8 +23,6 @@ export default function SpotsSection({ praias, usuario, usuarioId, onExigirLogin
       })
       .catch((err) => {
         if (cancelado) return;
-        // Sem localização não dá pra calcular distância — em vez de travar a
-        // experiência, cai automaticamente pro modo "mostrar todas".
         setStatusLocalizacao(err?.code === 1 ? 'negado' : 'indisponivel');
         setMostrarTodas(true);
       });
@@ -36,7 +31,6 @@ export default function SpotsSection({ praias, usuario, usuarioId, onExigirLogin
     };
   }, []);
 
-  // Anexa a distância (em km) de cada praia até o usuário, quando conhecida
   const praiasComDistancia = useMemo(() => {
     if (!userLocation) return praias.map((p) => ({ ...p, distanciaKm: null }));
     return praias.map((p) => ({
@@ -45,12 +39,9 @@ export default function SpotsSection({ praias, usuario, usuarioId, onExigirLogin
     }));
   }, [praias, userLocation]);
 
-  // Lista final exibida: busca > "mostrar todas" > raio padrão de 30km
   const praiasFiltradas = useMemo(() => {
     const termo = busca.toLowerCase().trim();
 
-    // Com busca ativa: procura em TODAS as praias, sem limite de distância —
-    // a pesquisa nunca fica presa ao raio de 30km.
     if (termo) {
       return praiasComDistancia
         .filter(
@@ -62,20 +53,15 @@ export default function SpotsSection({ praias, usuario, usuarioId, onExigirLogin
         .sort((a, b) => (a.distanciaKm ?? Infinity) - (b.distanciaKm ?? Infinity));
     }
 
-    // Sem busca, com "mostrar todas" ativo (ou sem localização disponível):
-    // lista completa, mais perto primeiro quando a distância é conhecida.
     if (mostrarTodas || !userLocation) {
       return [...praiasComDistancia].sort((a, b) => (a.distanciaKm ?? Infinity) - (b.distanciaKm ?? Infinity));
     }
 
-    // Modo padrão: só praias a até 30km, ordenadas da mais próxima pra mais distante.
     return praiasComDistancia
       .filter((p) => p.distanciaKm !== null && p.distanciaKm <= RAIO_PADRAO_KM)
       .sort((a, b) => a.distanciaKm - b.distanciaKm);
   }, [praiasComDistancia, busca, mostrarTodas, userLocation]);
 
-  // A praia selecionada (por qualquer mecanismo) precisa continuar acessível
-  // no mapa mesmo que tenha ficado de fora do filtro de distância/busca.
   const praiasParaMapa = useMemo(() => {
     if (!praiaSelecionada) return praiasFiltradas;
     const jaIncluida = praiasFiltradas.some((p) => p.id === praiaSelecionada.id);
@@ -121,7 +107,8 @@ export default function SpotsSection({ praias, usuario, usuarioId, onExigirLogin
         </div>
       </div>
 
-      <div className="spots-body">
+      {/* Adicionada a classe condicional 'has-selection' */}
+      <div className={`spots-body${praiaSelecionada ? ' has-selection' : ''}`}>
         <div className="spots-map-wrap">
           <Map praias={praiasParaMapa} onSelecionarPraia={setPraiaSelecionada} praiaFoco={praiaSelecionada} />
         </div>
