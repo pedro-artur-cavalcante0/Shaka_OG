@@ -175,13 +175,13 @@ function descricaoGenerica(score) {
 export function calcularScoreKitesurf({ ventoKmh, alturaOnda, wmoCode }) {
   let score = 0;
 
-  if (ventoKmh < 10) score += 0.5;
-  else if (ventoKmh < 14) score += 2.0;
-  else if (ventoKmh < 18) score += 4.0;
-  else if (ventoKmh < 25) score += 6.0;
-  else if (ventoKmh < 32) score += 5.2;
-  else if (ventoKmh < 40) score += 3.5;
-  else if (ventoKmh < 50) score += 1.5;
+  if (ventoKmh < 12) score += 0.5;
+  else if (ventoKmh < 16) score += 1.8;
+  else if (ventoKmh < 20) score += 3.2;
+  else if (ventoKmh < 25) score += 5.0;
+  else if (ventoKmh < 35) score += 6.0;
+  else if (ventoKmh < 45) score += 4.5;
+  else if (ventoKmh < 55) score += 2.0;
   else score += 0.3;
 
   if (alturaOnda < 0.3) score += 1.2;
@@ -200,13 +200,13 @@ export function calcularScoreKitesurf({ ventoKmh, alturaOnda, wmoCode }) {
 export function calcularScoreWindsurf({ ventoKmh, alturaOnda, wmoCode }) {
   let score = 0;
 
-  if (ventoKmh < 8) score += 0.5;
-  else if (ventoKmh < 12) score += 2.2;
-  else if (ventoKmh < 16) score += 4.0;
-  else if (ventoKmh < 22) score += 5.0;
-  else if (ventoKmh < 28) score += 4.3;
-  else if (ventoKmh < 36) score += 3.0;
-  else if (ventoKmh < 45) score += 1.4;
+  if (ventoKmh < 10) score += 0.5;
+  else if (ventoKmh < 14) score += 1.6;
+  else if (ventoKmh < 18) score += 2.8;
+  else if (ventoKmh < 24) score += 4.2;
+  else if (ventoKmh < 34) score += 5.0;
+  else if (ventoKmh < 42) score += 3.2;
+  else if (ventoKmh < 50) score += 1.4;
   else score += 0.3;
 
   if (alturaOnda < 0.3) score += 1.5;
