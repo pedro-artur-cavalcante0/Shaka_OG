@@ -1,0 +1,28 @@
+:root {
+  --bg: #060c14;
+  --bg-surface: #0b1422;
+  --bg-card: #0e1a2e;
+  --bg-card-2: #111f35;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.14);
+
+  --teal: #2dd4bf;
+  --teal-dim: #17a895;
+  --teal-glow: rgba(45, 212, 191, 0.22);
+
+  --sand: #f59e0b;
+  --sand-dim: #d97706;
+
+  --text-1: #f1f5f9;
+  --text-2: #94a3b8;
+  --text-3: #475569;
+
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "Space Mono", monospace;
+
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --nav-h: 68px;
+}

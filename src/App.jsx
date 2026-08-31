@@ -9,10 +9,11 @@ import Home from './pages/Home.jsx';
 import Termos from './pages/Termos.jsx';
 import Privacidade from './pages/Privacidade.jsx';
 import Contato from './pages/Contato.jsx';
+import Perfil from './pages/Profile.jsx';
 
 export default function App() {
   const { toast, mostrarToast } = useToast();
-  const { usuario, usuarioId, autenticar, logout } = useAuth(mostrarToast);
+ const {usuario, usuarioId, autenticar, logout, atualizarUsuario} = useAuth(mostrarToast);
 
   const [praias, setPraias] = useState([]);
   const [servicos, setServicos] = useState([]);
@@ -20,15 +21,22 @@ export default function App() {
   const [modalServicoAberto, setModalServicoAberto] = useState(false);
 
   const carregarServicos = useCallback(async () => {
-    const data = await fazerRequisicaoSupabase('servico', 'order=id.desc');
+    const data = await fazerRequisicaoSupabase(
+      'servico',
+      'order=id.desc'
+    );
+
     setServicos(data || []);
   }, []);
 
-  // equivalente ao Promise.all([carregarPraias(), carregarServicos()]) do iniciarApp()
   useEffect(() => {
-    fazerRequisicaoSupabase('praia', 'order=nivel_popularidade.desc').then((data) => {
+    fazerRequisicaoSupabase(
+      'praia',
+      'order=nivel_popularidade.desc'
+    ).then((data) => {
       if (data) setPraias(data);
     });
+
     carregarServicos();
   }, [carregarServicos]);
 
@@ -37,18 +45,26 @@ export default function App() {
     toast,
     modalLoginAberto,
     modalServicoAberto,
+
     onLoginClick: () => setModalLoginAberto(true),
+
     onLogout: logout,
+
     onFecharLogin: () => setModalLoginAberto(false),
+
     onFecharServico: () => setModalServicoAberto(false),
+
     autenticar,
+
     onServicoCriado: carregarServicos,
+
     mostrarToast,
   };
 
   return (
     <BrowserRouter>
       <Routes>
+
         <Route
           path="/"
           element={
@@ -65,9 +81,48 @@ export default function App() {
             </Layout>
           }
         />
-        <Route path="/termos" element={<Layout {...layoutProps}><Termos /></Layout>} />
-        <Route path="/privacidade" element={<Layout {...layoutProps}><Privacidade /></Layout>} />
-        <Route path="/contato" element={<Layout {...layoutProps}><Contato /></Layout>} />
+
+    <Route
+  path="/profile"
+  element={
+    <Layout {...layoutProps}>
+      <Perfil
+        usuario={usuario}
+        onLogout={logout}
+        mostrarToast={mostrarToast}
+        atualizarUsuario={atualizarUsuario}
+      />
+    </Layout>
+  }
+/>
+
+        <Route
+          path="/termos"
+          element={
+            <Layout {...layoutProps}>
+              <Termos />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/privacidade"
+          element={
+            <Layout {...layoutProps}>
+              <Privacidade />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/contato"
+          element={
+            <Layout {...layoutProps}>
+              <Contato />
+            </Layout>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );

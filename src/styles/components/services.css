@@ -1,0 +1,171 @@
+.servicos-section {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.servicos-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 64px 40px 32px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.servicos-header-text { flex: 1; min-width: 240px; }
+
+.servicos-header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.btn-novo-servico {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: var(--teal);
+  color: var(--bg);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 24px rgba(45, 212, 191, 0.25);
+  white-space: nowrap;
+}
+.btn-novo-servico:hover { background: #5ee7d8; transform: translateY(-2px); box-shadow: 0 0 40px rgba(45, 212, 191, 0.4); }
+
+.servicos-filtros { display: flex; gap: 12px; flex-wrap: wrap; padding: 28px 40px; border-bottom: 1px solid var(--border); }
+
+.filtro-btn {
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding: 11px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.filtro-btn:hover { border-color: var(--border-hover); color: var(--text-1); }
+.filtro-btn--ativo { background: rgba(45, 212, 191, 0.12); border-color: rgba(45, 212, 191, 0.4); color: var(--teal); font-weight: 600; }
+
+.servicos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 32px 40px; }
+
+.servico-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.servico-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.servico-card:hover { border-color: rgba(45, 212, 191, 0.25); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3); }
+.servico-card:hover::before { opacity: 1; }
+
+.servico-card[data-tipo="aula"] { --accent-tipo: #f59e0b; }
+.servico-card[data-tipo="reparo"] { --accent-tipo: #fde047; }
+.servico-card[data-tipo="hospedagem"] { --accent-tipo: #a78bfa; }
+.servico-card[data-tipo="alimentacao"] { --accent-tipo: #f87171; }
+.servico-card[data-tipo="transporte"] { --accent-tipo: #60a5fa; }
+.servico-card[data-tipo="fotografia"] { --accent-tipo: #f472b6; }
+.servico-card[data-tipo="outro"] { --accent-tipo: #94a3b8; }
+
+.servico-card[data-tipo]::before { background: linear-gradient(90deg, var(--accent-tipo, var(--teal)), transparent); }
+
+.servico-card-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+.servico-icone-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.servico-tipo-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(45, 212, 191, 0.1);
+  color: var(--teal);
+  border: 1px solid rgba(45, 212, 191, 0.2);
+}
+
+.servico-card[data-tipo="aula"] .servico-tipo-badge { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+.servico-card[data-tipo="reparo"] .servico-tipo-badge { background: rgba(253, 224, 71, 0.1); color: #fde047; border-color: rgba(253, 224, 71, 0.3); }
+.servico-card[data-tipo="hospedagem"] .servico-tipo-badge { background: rgba(167, 139, 250, 0.1); color: #c4b5fd; border-color: rgba(167, 139, 250, 0.3); }
+.servico-card[data-tipo="alimentacao"] .servico-tipo-badge { background: rgba(248, 113, 113, 0.1); color: #fca5a5; border-color: rgba(248, 113, 113, 0.3); }
+.servico-card[data-tipo="transporte"] .servico-tipo-badge { background: rgba(96, 165, 250, 0.1); color: #93c5fd; border-color: rgba(96, 165, 250, 0.3); }
+.servico-card[data-tipo="fotografia"] .servico-tipo-badge { background: rgba(244, 114, 182, 0.1); color: #f9a8d4; border-color: rgba(244, 114, 182, 0.3); }
+.servico-card[data-tipo="outro"] .servico-tipo-badge { background: rgba(148, 163, 184, 0.1); color: #cbd5e1; border-color: rgba(148, 163, 184, 0.3); }
+
+.servico-nome { font-size: 1.05rem; font-weight: 700; color: var(--text-1); margin-bottom: 2px; display: block; }
+.servico-descricao { font-size: 0.85rem; color: var(--text-2); line-height: 1.6; flex: 1; }
+
+.servico-rodape { padding-top: 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.servico-contato {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--teal);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+.servico-contato:hover { opacity: 0.75; }
+.servico-contato::before { content: "📞"; font-size: 0.8rem; }
+.servico-sem-contato { font-size: 0.75rem; color: var(--text-3); font-style: italic; }
+
+.servicos-vazio {
+  grid-column: 1/-1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--text-3);
+  text-align: center;
+}
+.servicos-vazio-icone { font-size: 3rem; opacity: 0.5; }
+.servicos-vazio-texto { font-size: 0.95rem; }
+.servicos-vazio-sub { font-size: 0.82rem; color: var(--text-3); }
+
+@media (max-width: 900px) {
+  .servicos-header { padding: 40px 20px 24px; flex-direction: column; align-items: flex-start; }
+  .servicos-header-actions { width: 100%; flex-direction: column; align-items: stretch; }
+  .servicos-header-actions .spots-search-wrap { flex: 1; }
+  .btn-novo-servico { justify-content: center; }
+  .servicos-filtros { padding: 16px 20px; }
+  .servicos-grid { grid-template-columns: 1fr; padding: 24px 20px; }
+}

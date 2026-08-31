@@ -1,0 +1,56 @@
+@keyframes waveFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-5deg); }
+}
+
+@keyframes oceanDrift {
+  from { background-position-x: 0; }
+  to   { background-position-x: -1200px; }
+}
+
+@keyframes lightSweep {
+  0%   { left: -60%; }
+  35%  { left: 130%; }
+  100% { left: 130%; }
+}
+
+@keyframes glintTwinkle {
+  0%, 100% { opacity: 0; transform: scale(0.6); }
+  50%      { opacity: 0.85; transform: scale(1); }
+}
+
+@keyframes bolhaSobe {
+  0%   { transform: translate(0, 0) scale(0.8); opacity: 0; }
+  12%  { opacity: 0.5; }
+  30%  { transform: translate(var(--wobble,10px), -35%) scale(1); }
+  55%  { transform: translate(calc(var(--wobble,10px) * -1), -65%) scale(1.05); opacity: 0.4; }
+  80%  { transform: translate(calc(var(--wobble,10px) * 0.6), -90%) scale(0.9); opacity: 0.2; }
+  100% { transform: translate(0, -120%) scale(0.75); opacity: 0; }
+}
+
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-brand-col { grid-column: 1 / -1; }
+}

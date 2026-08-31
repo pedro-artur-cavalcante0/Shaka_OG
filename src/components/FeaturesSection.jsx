@@ -34,6 +34,9 @@ const FEATURES = [
 export default function FeaturesSection({ totalPraias, totalServicos }) {
   return (
     <section className="features-section" id="features">
+      {/* Divisor decorativo — suaviza a transição vindo da seção de Serviços */}
+      <div className="features-divider" aria-hidden="true" />
+
       <div className="features-header">
         <span className="section-label">// COMO FUNCIONA</span>
         <h2 className="section-title">Tudo que você precisa, num só lugar</h2>
@@ -53,7 +56,6 @@ export default function FeaturesSection({ totalPraias, totalServicos }) {
         ))}
       </div>
 
-        {/*Area de estatísticas*/}
       <div className="stats-strip">
         <div className="stats-strip-item">
           <span className="stats-strip-number">{totalPraias > 0 ? totalPraias : '—'}</span>
@@ -71,6 +73,17 @@ export default function FeaturesSection({ totalPraias, totalServicos }) {
           <span className="stats-strip-number">24h</span>
           <span className="stats-strip-label">Clima atualizado</span>
         </div>
+      </div>
+
+      {/* Chamada de encerramento — fecha a página antes do rodapé */}
+      <div className="features-closing">
+        <p className="features-closing-text">Pronto pra encontrar seu próximo pico?</p>
+        <a href="#spots" className="btn-primary">
+          <span>Ver praias agora</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+          </svg>
+        </a>
       </div>
     </section>
   );
