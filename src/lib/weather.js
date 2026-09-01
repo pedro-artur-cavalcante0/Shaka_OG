@@ -27,148 +27,52 @@ export function estimarOndas(ventoKmh) {
   };
 }
 
-export function calcularScoreSurf({
-  alturaOnda,
-  periodoOnda,
-  ventoKmh,
-  wmoCode,
-  direcaoVento = 0,
-  direcaoOnda = 0,
-}) {
-  /*
-   * SCORE DE SURF
-   *
-   * 10 pontos possíveis:
-   * - Tamanho da onda: 0–3
-   * - Período:         0–3
-   * - Vento:           0–2
-   * - Tempo:           0–1
-   * - Regularidade:    0–1
-   */
-
+export function calcularScoreSurf({ alturaOnda, periodoOnda, ventoKmh, wmoCode }) {
   let score = 0;
 
-  // ============================================================
-  // 1. ALTURA DA ONDA
-  // ============================================================
+  if (alturaOnda >= 0.7 && alturaOnda < 1.0) score += 1.8;
+  else if (alturaOnda >= 1.0 && alturaOnda < 1.3) score += 2.4;
+  else if (alturaOnda >= 1.3 && alturaOnda < 1.8) score += 3.0;
+  else if (alturaOnda >= 1.8 && alturaOnda < 2.3) score += 2.7;
+  else if (alturaOnda >= 2.3 && alturaOnda < 3.0) score += 2.1;
+  else if (alturaOnda >= 3.0 && alturaOnda < 3.8) score += 1.3;
+  else if (alturaOnda >= 3.8) score += 0.7;
+  else if (alturaOnda >= 0.4) score += 0.8;
 
-  if (alturaOnda >= 0.7 && alturaOnda < 1.0) {
-    score += 1.8;
-  } else if (alturaOnda >= 1.0 && alturaOnda < 1.3) {
-    score += 2.4;
-  } else if (alturaOnda >= 1.3 && alturaOnda < 1.8) {
-    score += 3.0;
-  } else if (alturaOnda >= 1.8 && alturaOnda < 2.3) {
-    score += 2.7;
-  } else if (alturaOnda >= 2.3 && alturaOnda < 3.0) {
-    score += 2.1;
-  } else if (alturaOnda >= 3.0 && alturaOnda < 3.8) {
-    score += 1.3;
-  } else if (alturaOnda >= 3.8) {
-    score += 0.7;
-  } else if (alturaOnda >= 0.4) {
-    score += 0.8;
-  }
+  if (periodoOnda >= 16) score += 3.0;
+  else if (periodoOnda >= 14) score += 2.7;
+  else if (periodoOnda >= 12) score += 2.3;
+  else if (periodoOnda >= 10) score += 1.9;
+  else if (periodoOnda >= 8) score += 1.3;
+  else if (periodoOnda >= 6) score += 0.7;
+  else score += 0.2;
 
-  // ============================================================
-  // 2. PERÍODO
-  // ============================================================
+  if (ventoKmh < 5) score += 2.0;
+  else if (ventoKmh < 10) score += 1.8;
+  else if (ventoKmh < 15) score += 1.5;
+  else if (ventoKmh < 20) score += 1.1;
+  else if (ventoKmh < 25) score += 0.7;
+  else if (ventoKmh < 30) score += 0.3;
+  else if (ventoKmh < 40) score -= 0.3;
+  else score -= 0.8;
 
-  if (periodoOnda >= 16) {
-    score += 3.0;
-  } else if (periodoOnda >= 14) {
-    score += 2.7;
-  } else if (periodoOnda >= 12) {
-    score += 2.3;
-  } else if (periodoOnda >= 10) {
-    score += 1.9;
-  } else if (periodoOnda >= 8) {
-    score += 1.3;
-  } else if (periodoOnda >= 6) {
-    score += 0.7;
-  } else {
-    score += 0.2;
-  }
-
-  // ============================================================
-  // 3. VENTO
-  // ============================================================
-
-  if (ventoKmh < 5) {
-    score += 2.0;
-  } else if (ventoKmh < 10) {
-    score += 1.8;
-  } else if (ventoKmh < 15) {
-    score += 1.5;
-  } else if (ventoKmh < 20) {
-    score += 1.1;
-  } else if (ventoKmh < 25) {
-    score += 0.7;
-  } else if (ventoKmh < 30) {
-    score += 0.3;
-  } else if (ventoKmh < 40) {
-    score -= 0.3;
-  } else {
-    score -= 0.8;
-  }
-
-  // ============================================================
-  // 4. CONDIÇÕES CLIMÁTICAS
-  // ============================================================
-
-  if ([0, 1, 2, 3].includes(wmoCode)) {
-    score += 1;
-  }
-
-  if ([51, 53, 61, 63, 80, 81].includes(wmoCode)) {
-    score -= 0.3;
-  }
-
-  if ([65, 82, 95, 96, 99].includes(wmoCode)) {
-    score -= 0.9;
-  }
-
-  // ============================================================
-  // NORMALIZAÇÃO
-  // ============================================================
+  if ([0, 1, 2, 3].includes(wmoCode)) score += 1;
+  if ([51, 53, 61, 63, 80, 81].includes(wmoCode)) score -= 0.3;
+  if ([65, 82, 95, 96, 99].includes(wmoCode)) score -= 0.9;
 
   score = Math.round(Math.max(0, Math.min(10, score)) * 10) / 10;
-
-  let desc;
-
-  if (score < 2) {
-    desc = 'Sem condições';
-  } else if (score < 3.5) {
-    desc = 'Muito fraco';
-  } else if (score < 4.5) {
-    desc = 'Fraco';
-  } else if (score < 5.5) {
-    desc = 'Razoável';
-  } else if (score < 6.5) {
-    desc = 'Bom para iniciantes';
-  } else if (score < 7.5) {
-    desc = 'Bom';
-  } else if (score < 8.5) {
-    desc = 'Muito bom';
-  } else if (score < 9.3) {
-    desc = 'Excelente';
-  } else {
-    desc = 'Épico 🤙';
-  }
-
-  return {
-    score,
-    desc,
-  };
+  return { score, desc: descricaoGenerica(score) };
 }
 
 function descricaoGenerica(score) {
   if (score < 2) return 'Sem condições';
-  if (score < 4) return 'Fraco';
+  if (score < 3.5) return 'Muito fraco';
+  if (score < 4.5) return 'Fraco';
   if (score < 5.5) return 'Razoável';
-  if (score < 7) return 'Bom';
+  if (score < 6.5) return 'Bom para iniciantes';
+  if (score < 7.5) return 'Bom';
   if (score < 8.5) return 'Muito bom';
-  if (score < 9.5) return 'Excelente';
+  if (score < 9.3) return 'Excelente';
   return 'Épico 🤙';
 }
 
@@ -224,7 +128,6 @@ export function calcularScoreWindsurf({ ventoKmh, alturaOnda, wmoCode }) {
 
 export function calcularScoreSUP({ ventoKmh, alturaOnda, wmoCode }) {
   let score = 0;
-
   if (ventoKmh < 8) score += 6.0;
   else if (ventoKmh < 14) score += 4.5;
   else if (ventoKmh < 20) score += 2.5;
@@ -262,8 +165,6 @@ function fetchComTimeout(url, ms = 8000) {
   return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
 }
 
-// "2026-08-17T14:00" -> "14:00" (a string já vem no fuso local, então
-// evitamos passar por `new Date()` pra não correr risco de reconverter fuso)
 function horaDeIso(iso) {
   return iso.split('T')[1]?.slice(0, 5) ?? '--:--';
 }
@@ -275,36 +176,19 @@ function horaIndexDeIso(iso) {
 export function calcularMelhorPeriodo(horas) {
   if (!horas.length) return null;
 
-  const ordenadas = [...horas]
-    .sort((a, b) => a.horaIdx - b.horaIdx);
-
-  /*
-   * A janela de surf deve ter entre 3 e 4 horas.
-   * Nunca mostramos apenas 1 ou 2 horas.
-   */
-
+  const ordenadas = [...horas].sort((a, b) => a.horaIdx - b.horaIdx);
   const janelas = [];
 
   for (let inicio = 0; inicio < ordenadas.length; inicio++) {
-
     for (let duracao = 3; duracao <= 4; duracao++) {
-
       const fim = inicio + duracao - 1;
-
-      if (fim >= ordenadas.length) {
-        continue;
-      }
+      if (fim >= ordenadas.length) continue;
 
       const janela = ordenadas.slice(inicio, fim + 1);
-
-      // Precisa ser uma sequência horária contínua
       let continua = true;
 
       for (let i = 1; i < janela.length; i++) {
-        if (
-          janela[i].horaIdx !==
-          janela[i - 1].horaIdx + 1
-        ) {
+        if (janela[i].horaIdx !== janela[i - 1].horaIdx + 1) {
           continua = false;
           break;
         }
@@ -313,100 +197,45 @@ export function calcularMelhorPeriodo(horas) {
       if (!continua) continue;
 
       const scores = janela.map(h => h.score);
-
-      const media =
-        scores.reduce((a, b) => a + b, 0) /
-        scores.length;
-
+      const media = scores.reduce((a, b) => a + b, 0) / scores.length;
       const pico = Math.max(...scores);
       const minimo = Math.min(...scores);
 
-      /*
-       * Penaliza janelas que tenham uma queda muito grande.
-       */
-      const consistencia =
-        minimo >= pico - 1.5
-          ? 1
-          : minimo >= pico - 2.5
-            ? 0.5
-            : 0;
+      const consistencia = minimo >= pico - 1.5 ? 1 : minimo >= pico - 2.5 ? 0.5 : 0;
+      const valor = media * 0.65 + pico * 0.25 + consistencia * 0.10;
 
-      /*
-       * A média é o fator mais importante.
-       * O pico ajuda a desempatar.
-       * A consistência evita janelas ruins.
-       */
-      const valor =
-        media * 0.65 +
-        pico * 0.25 +
-        consistencia * 0.10;
-
-      janelas.push({
-        janela,
-        media,
-        pico,
-        valor,
-      });
+      janelas.push({ janela, media, pico, valor });
     }
   }
 
   if (!janelas.length) return null;
 
-  /*
-   * Melhor janela.
-   *
-   * Em empate:
-   * - prefere 4 horas
-   * - depois prefere maior média
-   */
   janelas.sort((a, b) => {
-
     if (Math.abs(b.valor - a.valor) < 0.15) {
-      if (
-        b.janela.length !==
-        a.janela.length
-      ) {
-        return (
-          b.janela.length -
-          a.janela.length
-        );
+      if (b.janela.length !== a.janela.length) {
+        return b.janela.length - a.janela.length;
       }
     }
-
     return b.valor - a.valor;
   });
 
   const escolhida = janelas[0].janela;
-
-  const melhor = escolhida.reduce(
-    (a, b) =>
-      b.score > a.score ? b : a
-  );
+  const melhor = escolhida.reduce((a, b) => (b.score > a.score ? b : a));
 
   return {
-    inicio:
-      `${String(escolhida[0].horaIdx)
-        .padStart(2, '0')}:00`,
-
-    fim:
-      `${String(escolhida[escolhida.length - 1].horaIdx + 1)
-        .padStart(2, '0')}:00`,
-
-    score:
-      Math.round(melhor.score * 10) / 10,
-
+    inicio: `${String(escolhida[0].horaIdx).padStart(2, '0')}:00`,
+    fim: `${String(escolhida[escolhida.length - 1].horaIdx + 1).padStart(2, '0')}:00`,
+    score: Math.round(melhor.score * 10) / 10,
     desc: melhor.desc,
   };
 }
 
 function encontrarIndicePorHora(times, hora) {
   if (!Array.isArray(times)) return -1;
-
   return times.findIndex(t => t === hora);
 }
 
-// Retorna { erro: true } ou o objeto completo pronto pra exibir no widget.
-export async function carregarClima(lat, lon) {
+export async function carregarClima(lat, lon, modalidade = 'surf') {
   let atm;
   try {
     const urlAtm =
@@ -472,14 +301,17 @@ export async function carregarClima(lat, lon) {
     estimado = true;
   }
 
-  const { score, desc: scoreDesc } = calcularScoreSurf({ alturaOnda, periodoOnda, ventoKmh, wmoCode });
+  // Utiliza a função de cálculo específica da modalidade atual
+  const funcaoCalculo = MODALIDADES[modalidade]?.calcular || calcularScoreSurf;
+  const dadosAtuais = { alturaOnda, periodoOnda, ventoKmh, wmoCode };
+  const { score, desc: scoreDesc } = funcaoCalculo(dadosAtuais);
+
   const wmoInfo = WMO_CODES[wmoCode] ?? '🌡|--';
   const [emoji, descClima] = wmoInfo.split('|');
   const uvLabels = ['Mínimo', 'Baixo', 'Moderado', 'Alto', 'Muito alto', 'Extremo'];
   const uvLabel = uvLabels[Math.min(Math.floor(uvIndex / 3), 5)];
   const hora = new Date(c.time ?? Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-  // ---- Maré do dia (sea_level_height_msl) ----
   let mare = [];
   let mareAlta = null;
   let mareBaixa = null;
@@ -519,11 +351,11 @@ export async function carregarClima(lat, lon) {
       }
 
       return { horaIdx, alturaOnda: altH, periodoOnda: perH, ventoKmh: ventoH, wmoCode: wmoH };
-    }).filter(h => h.horaIdx >= 5 && h.horaIdx <= 19);
+    }).filter(h => h.horaIdx >= 5 && h.horaIdx <= 18); // FIX: Restrito estritamente ao diurno (05:00 às 18:00)
   }
 
   const melhorPeriodo = horasBrutas.length
-    ? calcularMelhorPeriodo(horasBrutas.map((h) => ({ horaIdx: h.horaIdx, ...calcularScoreSurf(h) })))
+    ? calcularMelhorPeriodo(horasBrutas.map((h) => ({ horaIdx: h.horaIdx, ...funcaoCalculo(h) })))
     : null;
 
   return {
