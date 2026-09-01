@@ -49,7 +49,7 @@
 
 .light-sweep {
   position: absolute;
-  top: 40%; bottom: 0; left: -60%;
+  top: 0%; bottom: 0; left: -60%;
   width: 40%;
   background: linear-gradient(100deg, transparent, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.16) 50%, rgba(255,255,255,0.10) 55%, transparent);
   mix-blend-mode: screen;

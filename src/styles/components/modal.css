@@ -73,3 +73,245 @@
 @media (max-width: 900px) {
   .form-row { grid-template-columns: 1fr; }
 }
+
+/* =============================================
+   REFORMA UI/UX — AVALIAÇÃO DE PRAIAS
+   ============================================= */
+
+.modal-title-eval {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.05em;
+  color: var(--text-1);
+  margin-bottom: 20px;
+}
+
+.ratings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.rating-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rating-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-2);
+  min-width: 130px;
+}
+
+.rating-label-icon {
+  color: var(--teal);
+}
+
+/* Estrelas */
+.stars-wrap {
+  display: flex;
+  gap: 4px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.15s;
+}
+
+.star-btn:hover {
+  transform: scale(1.2);
+}
+
+/* Crowd / Lotação (Bonecos) */
+.crowd-selector-wrap,
+.ramp-selector-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.crowd-icons {
+  display: flex;
+  gap: 4px;
+}
+
+.crowd-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.15s;
+}
+
+.crowd-btn:hover {
+  transform: scale(1.15);
+}
+
+.rating-value-desc {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Dificuldade (Rampa de Barras) */
+.ramp-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 28px;
+  padding-top: 10px;
+}
+
+.ramp-bar-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.ramp-pointer {
+  position: absolute;
+  top: -10px;
+  fill: var(--teal);
+  color: var(--teal);
+  transform: rotate(180deg);
+  animation: pulse 1.5s infinite;
+}
+
+.ramp-bar {
+  width: 10px;
+  border-radius: 3px;
+  background: var(--bg-card-2);
+  border: 1px solid var(--border);
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.ramp-bar-wrapper:hover .ramp-bar {
+  transform: scaleY(1.1);
+}
+
+/* Alturas progressivas em rampa */
+.bar-step-1 { height: 8px; }
+.bar-step-2 { height: 12px; }
+.bar-step-3 { height: 16px; }
+.bar-step-4 { height: 20px; }
+.bar-step-5 { height: 24px; }
+
+.ramp-bar.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  box-shadow: 0 0 8px var(--teal-glow);
+}
+
+/* Grid de Badges / Condições */
+.features-section-title {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+.features-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.feature-card-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.feature-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.feature-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.feature-card-btn:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+/* Estado Ativo (Verde/Teal para itens positivos) */
+.feature-card-btn.active {
+  background: rgba(45, 212, 191, 0.08);
+  border-color: var(--teal);
+  color: var(--text-1);
+}
+
+.feature-card-btn.active .feature-icon-circle {
+  background: var(--teal);
+  color: var(--bg);
+  border-color: var(--teal);
+  box-shadow: 0 0 12px var(--teal-glow);
+}
+
+/* Estado Ativo (Vermelho/Alerta para problemas) */
+.feature-card-btn.active.warning {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: #f87171;
+  color: var(--text-1);
+}
+
+.feature-card-btn.active.warning .feature-icon-circle {
+  background: #f87171;
+  color: #ffffff;
+  border-color: #f87171;
+  box-shadow: 0 0 12px rgba(248, 113, 113, 0.3);
+}
+
+@media (max-width: 480px) {
+  .rating-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .rating-value-desc {
+    text-align: left;
+  }
+}
