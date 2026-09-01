@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fazerRequisicaoSupabase } from '../lib/supabase.js';
 import { carregarClima } from '../lib/weather.js';
 import { analisarComentariosLocal, resumoSemComentarios, SENTIMENTO_CORES } from '../lib/resumoIA.js';
+import AvaliacaoForm from './AvaliacaoForm.jsx';
 import WeatherWidget from './WeatherWidget.jsx';
 
 function Estrelas({ valor }) {
@@ -15,6 +16,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   const [clima, setClima] = useState(null);
   const [analise, setAnalise] = useState(null);
   const [eventos, setEventos] = useState([]);
+  const [formAvaliacaoAberto, setFormAvaliacaoAberto] = useState(false);
   const [comentarios, setComentarios] = useState([]);
   const [comentarioTexto, setComentarioTexto] = useState('');
   const [resumoIA, setResumoIA] = useState(null);
@@ -87,25 +89,26 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
     setFormEventoAberto(true);
   }
 
-  async function enviarComentario() {
-    const texto = comentarioTexto.trim();
-    if (!texto) {
-      mostrarToast('Digite uma mensagem antes de enviar.', 'erro');
+  async function enviarAvaliacao(dadosAvaliacao) {
+    if (!usuario) {
+      mostrarToast('Faça login para avaliar!', 'erro');
+      onExigirLogin();
       return;
     }
-    const ok = await fazerRequisicaoSupabase('comentario', '', 'POST', {
-      texto,
-      tipo: 'avaliacao',
+
+    const ok = await fazerRequisicaoSupabase('avaliacao', '', 'POST', {
       id_praia: praia.id,
       id_usuario: usuarioId,
       data: new Date().toISOString(),
+      ...dadosAvaliacao
     });
+
     if (ok) {
-      setComentarioTexto('');
-      mostrarToast('Comentário enviado! 🤙', 'ok');
+      setFormAvaliacaoAberto(false);
+      mostrarToast('Avaliação enviada com sucesso! :-)', 'ok');
       await carregarComentarios();
     } else {
-      mostrarToast('Não foi possível enviar o comentário.', 'erro');
+      mostrarToast('Não foi possível enviar a avaliação.', 'erro');
     }
   }
 
@@ -231,25 +234,69 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
       </div>
 
       <div className="info-secao">
-        <h4>💬 Comentários</h4>
+        <h4>Avaliações da Comunidade</h4>
         {comentarios.length === 0 ? (
-          <div className="info-card">Seja o primeiro a comentar.</div>
+          <div className="info-card">Seja o primeiro a avaliar.</div>
         ) : (
           comentarios.map((c) => (
             <div className="comentario-item" key={c.id}>
-              <span>{c.tipo || 'Comentário'} · {new Date(c.data).toLocaleString('pt-BR')}</span>
-              <p>{c.texto}</p>
+              <span>{c.tipo || 'Avaliação'} · {new Date(c.data).toLocaleString('pt-BR')}</span>
+              {c.nota_geral && <div>Nota: {c.nota_geral}/5</div>}
+              {c.texto && <p>{c.texto}</p>}
             </div>
           ))
         )}
-        <textarea
-          className="form-textarea"
-          placeholder="Deixe sua dica ou alerta..."
-          value={comentarioTexto}
-          onChange={(e) => setComentarioTexto(e.target.value)}
-        />
-        <button className="btn-send" onClick={enviarComentario}>Enviar comentário</button>
+        
+        <button 
+          className="btn-add-item" 
+          onClick={() => {
+            if (!usuario) {
+              mostrarToast('Faça login para avaliar!', 'erro');
+              onExigirLogin();
+            } else {
+              setFormAvaliacaoAberto(true);
+            }
+          }}
+          style={{ width: '100%', marginTop: '10px' }}
+        >
+          Avaliar esta Praia
+        </button>
       </div>
+
+      {formAvaliacaoAberto && (
+        <div style={{
+          position: 'fixed', 
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.6)', 
+          zIndex: 9999,
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'flex-end'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-panel, #fff)',
+            borderTopLeftRadius: '24px', 
+            borderTopRightRadius: '24px',
+            padding: '20px', 
+            maxHeight: '90vh', 
+            overflowY: 'auto',
+            boxShadow: '0 -4px 10px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 style={{ margin: 0 }}>Avaliar {praia.nome}</h3>
+              <button 
+                onClick={() => setFormAvaliacaoAberto(false)} 
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '0 10px' }}
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* O formulário isolado entra aqui */}
+            <AvaliacaoForm onSubmit={enviarAvaliacao} loading={false} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
