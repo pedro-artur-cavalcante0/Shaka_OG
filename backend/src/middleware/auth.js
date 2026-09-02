@@ -22,6 +22,16 @@ export function exigirAuth(req, res, next) {
   }
 }
 
+export function exigirAdmin(req, res, next) {
+  if (!req.usuario) {
+    return res.status(401).json({ erro: 'Faça login para continuar.' });
+  }
+  if (req.usuario.role !== 'admin') {
+    return res.status(403).json({ erro: 'Acesso restrito a administradores.' });
+  }
+  next();
+}
+
 export function autenticacaoOpcional(req, res, next) {
   const token = extrairToken(req);
   if (token) {

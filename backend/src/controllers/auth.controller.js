@@ -1,10 +1,8 @@
-// controllers/auth.controller.js
-// Substitui a lógica que hoje vive em src/hooks/useAuth.js no front. A
+
+// substitui a lógica que hoje vive em src/hooks/useAuth.js no front. A
 // diferença essencial: senha nunca é comparada nem guardada em texto puro.
 //
-// Requer que a tabela `usuario` no Supabase tenha uma coluna `senha_hash`
-// (texto) em vez de (ou além de) `senha`. Ver backend/README.md para o SQL
-// de migração.
+
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -14,15 +12,16 @@ import { env } from '../config/env.js';
 const SALT_ROUNDS = 10;
 
 function gerarToken(usuario) {
-  return jwt.sign({ id: usuario.id, nome: usuario.nome, email: usuario.email }, env.jwtSecret, {
-    expiresIn: '7d',
-  });
+  return jwt.sign(
+    { id: usuario.id, nome: usuario.nome, email: usuario.email, role: usuario.role },
+    env.jwtSecret,
+    { expiresIn: '7d' }
+  );
 }
 
 function paraPublico(usuario) {
-
-  const { id, nome, email } = usuario;
-  return { id, nome, email };
+  const { id, nome, email, role } = usuario;
+  return { id, nome, email, role };
 }
 
 export async function registrar(req, res) {
@@ -38,18 +37,24 @@ export async function registrar(req, res) {
     .or(`email.eq.${email},nome.eq.${nome}`)
     .maybeSingle();
 
-  if (erroBusca) return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
+  if (erroBusca) {
+    console.error(erroBusca);
+    return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
+  }
   if (existente) return res.status(409).json({ erro: 'Usuário ou email já cadastrado.' });
 
   const senha_hash = await bcrypt.hash(senha, SALT_ROUNDS);
 
   const { data: novoUsuario, error: erroInsercao } = await supabaseAdmin
     .from('usuario')
-    .insert({ nome, email, senha_hash })
+    .insert({ id: crypto.randomUUID(), nome, email, senha_hash, role: 'user' })
     .select()
     .single();
 
-  if (erroInsercao) return res.status(500).json({ erro: 'Erro ao cadastrar usuário.' });
+  if (erroInsercao) {
+    console.error(erroInsercao);
+    return res.status(500).json({ erro: 'Erro ao cadastrar usuário.' });
+  }
 
   const token = gerarToken(novoUsuario);
   return res.status(201).json({ token, usuario: paraPublico(novoUsuario) });
@@ -68,7 +73,10 @@ export async function login(req, res) {
     .eq('nome', nome)
     .maybeSingle();
 
-  if (error) return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
+  }
   if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado.' });
 
   const senhaConfere = await bcrypt.compare(senha, usuario.senha_hash || '');
