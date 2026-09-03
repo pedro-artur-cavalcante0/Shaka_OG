@@ -315,3 +315,54 @@
     text-align: left;
   }
 }
+
+/* =============================================
+   REFORMA UI/UX — AVALIAÇÃO DE PRAIAS & BOTÃO CTA
+   ============================================= */
+
+/* Botão CTA — Avaliar esta Praia */
+.btn-avaliar-praia,
+.btn-add-item {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 13px 20px !important;
+  margin-top: 10px !important;
+  
+  background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%) !important;
+  color: #0b1422 !important;
+  
+  font-family: var(--font-body, inherit) !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  
+  border: none !important;
+  border-radius: var(--r-sm, 8px) !important;
+  cursor: pointer !important;
+  
+  box-shadow: 0 4px 14px rgba(45, 212, 191, 0.25) !important;
+  transition: all 0.25s ease !important;
+}
+
+.btn-avaliar-praia .btn-star-icon,
+.btn-add-item .btn-star-icon {
+  color: #f59e0b !important;
+  fill: #f59e0b !important;
+  flex-shrink: 0 !important;
+  transition: transform 0.25s ease !important;
+}
+
+.btn-avaliar-praia:hover,
+.btn-add-item:hover {
+  transform: translateY(-2px) !important;
+  background: linear-gradient(135deg, #5ee7d8 0%, #2dd4bf 100%) !important;
+  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.4) !important;
+}
+
+.btn-avaliar-praia:hover .btn-star-icon,
+.btn-add-item:hover .btn-star-icon {
+  transform: scale(1.2) rotate(12deg) !important;
+}
