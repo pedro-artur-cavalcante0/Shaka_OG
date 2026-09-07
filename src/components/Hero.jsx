@@ -38,7 +38,7 @@ export default function Hero() {
     <section className="hero" id="hero">
       <div className="hero-bg">
         {/* Camadas de onda com parallax — mais ao fundo = mais lenta, mais suave e mais escura */}
-        <div className="ocean-layer ocean-layer--back" />
+        
         <div className="ocean-layer ocean-layer--mid" />
         <div className="light-sweep" />
         <div className="ocean-layer ocean-layer--front" />

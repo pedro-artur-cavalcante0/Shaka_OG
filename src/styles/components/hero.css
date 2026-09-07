@@ -49,8 +49,8 @@
 
 .light-sweep {
   position: absolute;
-  top: 40%; bottom: 0; left: -60%;
-  width: 40%;
+  top: 0%; bottom: 0; left: -60%;
+  width: 0%;
   background: linear-gradient(100deg, transparent, rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.16) 50%, rgba(255,255,255,0.10) 55%, transparent);
   mix-blend-mode: screen;
   pointer-events: none;
@@ -123,6 +123,10 @@
   letter-spacing: 0.03em;
   margin-bottom: 28px;
   animation: heroReveal 1s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none; 
+  -ms-user-select: none;
 }
 .hero-title-line { display: block; }
 .hero-title-line--1 { font-size: clamp(2.3rem, 11vw, 7.5rem); color: var(--text-1); }

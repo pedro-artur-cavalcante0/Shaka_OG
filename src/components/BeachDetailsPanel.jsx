@@ -4,6 +4,7 @@ import { carregarClima } from '../lib/weather.js';
 import { analisarComentariosLocal, resumoSemComentarios, SENTIMENTO_CORES } from '../lib/resumoIA.js';
 import AvaliacaoForm from './AvaliacaoForm.jsx';
 import WeatherWidget from './WeatherWidget.jsx';
+import { Star } from 'lucide-react';
 
 function Estrelas({ valor }) {
   let s = '';
@@ -247,20 +248,21 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
           ))
         )}
         
-        <button 
-          className="btn-add-item" 
-          onClick={() => {
-            if (!usuario) {
-              mostrarToast('Faça login para avaliar!', 'erro');
-              onExigirLogin();
-            } else {
-              setFormAvaliacaoAberto(true);
-            }
-          }}
-          style={{ width: '100%', marginTop: '10px' }}
-        >
-          Avaliar esta Praia
-        </button>
+<button 
+  type="button"
+  className="btn-avaliar-praia" 
+  onClick={() => {
+    if (!usuario) {
+      mostrarToast('Faça login para avaliar!', 'erro');
+      onExigirLogin();
+    } else {
+      setFormAvaliacaoAberto(true);
+    }
+  }}
+>
+  <Star size={18} className="btn-star-icon" />
+  <span>Avaliar esta Praia</span>
+</button>
       </div>
 
       {formAvaliacaoAberto && (
