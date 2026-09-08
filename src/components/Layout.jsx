@@ -7,8 +7,6 @@ import Toast from './Toast.jsx';
 export default function Layout({
   children,
   usuario,
-  usuarioId,
-  praias,
   toast,
   modalLoginAberto,
   modalServicoAberto,
@@ -33,11 +31,8 @@ export default function Layout({
       <ServicoModal
         aberto={modalServicoAberto}
         onFechar={onFecharServico}
+        onServicoCriado={onServicoCriado}
         mostrarToast={mostrarToast}
-        usuario={usuario}
-        usuarioId={usuarioId}
-        onExigirLogin={onLoginClick}
-        praias={praias}
       />
 
       <Toast toast={toast} />

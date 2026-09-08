@@ -42,8 +42,6 @@ export default function App() {
 
   const layoutProps = {
     usuario,
-    usuarioId,
-    praias,
     toast,
     modalLoginAberto,
     modalServicoAberto,
