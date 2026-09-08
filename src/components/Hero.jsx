@@ -128,15 +128,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-
-      <div className="hero-scroll-hint" onClick={scrollParaSpots}>
-        <span>role para explorar</span>
-        <div className="hero-scroll-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
-        </div>
-      </div>
     </section>
   );
 }
