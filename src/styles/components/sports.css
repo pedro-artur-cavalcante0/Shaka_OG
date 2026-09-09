@@ -356,3 +356,35 @@
   .ocean-layer--mid { height: 28%; }
   .ocean-layer--front { height: 18%; }
 }
+
+/* 1. Permite que os botões de esporte façam scroll horizontal limpo em telas pequenas */
+.weather-widget,
+.info-secao,
+.painel-detalhes {
+  max-width: 100% !important;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Ajusta o container dos botões de esportes para permitir rolagem sem estourar a tela */
+.deportes-tags, 
+div:has(> button:contains("Stand Up")) {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+  padding-bottom: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Opcional: oculta a barra de scroll do container de tags no mobile para ficar mais bonito */
+.deportes-tags::-webkit-scrollbar {
+  display: none;
+}
+
+/* 2. Força imagens, gráficos e canvas a respeitarem a largura da tela */
+svg, canvas, img {
+  max-width: 100% !important;
+  height: auto;
+}
