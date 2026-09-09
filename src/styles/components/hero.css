@@ -117,6 +117,40 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
+/* =============================================
+   BADGE DE DIFICULDADE DO SPOT
+   ============================================= */
+
+.spot-difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 8px;
+  user-select: none;
+}
+
+.difficulty-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.spot-difficulty-badge.difficulty-intermediate {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.spot-difficulty-badge.difficulty-intermediate .difficulty-dot {
+  background-color: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
 .hero-title {
   font-family: var(--font-display);
   line-height: 0.92;

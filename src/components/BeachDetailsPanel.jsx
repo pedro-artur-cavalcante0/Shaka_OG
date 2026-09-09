@@ -128,12 +128,21 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   return (
     <div className="painel-detalhes">
       <div className="painel-titulo">
-        <div>
-          <h3>{praia.nome}</h3>
-          <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
-        </div>
-        <button className="painel-fechar" onClick={onFechar}>✕</button>
-      </div>
+  <div className="painel-titulo">
+  <div>
+    <h3>{praia.nome}</h3>
+    <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
+    
+    {/* Badge de Dificuldade do Spot */}
+    <div className="spot-difficulty-badge difficulty-intermediate">
+      <span className="difficulty-dot"></span>
+      Nível: Intermediário
+    </div>
+  </div>
+  <button className="painel-fechar" onClick={onFechar}>✕</button>
+</div>
+  <button className="painel-fechar" onClick={onFechar}>✕</button>
+</div>
 
       <div className="praia-dados">
         <div className="info-card"><strong>Popularidade</strong><Estrelas valor={praia.nivel_popularidade} /></div>
@@ -302,3 +311,9 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
     </div>
   );
 }
+
+{/* Badge de Dificuldade do Spot */}
+<div className="spot-difficulty-badge difficulty-intermediate">
+  <span className="difficulty-dot"></span>
+  Nível: Intermediário
+</div>
