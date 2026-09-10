@@ -38,7 +38,7 @@ export default function Hero() {
     <section className="hero" id="hero">
       <div className="hero-bg">
         {/* Camadas de onda com parallax — mais ao fundo = mais lenta, mais suave e mais escura */}
-        <div className="ocean-layer ocean-layer--back" />
+        
         <div className="ocean-layer ocean-layer--mid" />
         <div className="light-sweep" />
         <div className="ocean-layer ocean-layer--front" />
@@ -126,15 +126,6 @@ export default function Hero() {
             <span className="hero-stat-number">CE</span>
             <span className="hero-stat-label">Litoral</span>
           </div>
-        </div>
-      </div>
-
-      <div className="hero-scroll-hint" onClick={scrollParaSpots}>
-        <span>role para explorar</span>
-        <div className="hero-scroll-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 5v14M5 12l7 7 7-7" />
-          </svg>
         </div>
       </div>
     </section>

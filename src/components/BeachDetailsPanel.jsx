@@ -3,7 +3,9 @@ import { fazerRequisicaoSupabase } from '../lib/supabase.js';
 import { carregarClima } from '../lib/weather.js';
 import { analisarComentariosLocal, resumoSemComentarios, SENTIMENTO_CORES } from '../lib/resumoIA.js';
 import AvaliacaoForm from './AvaliacaoForm.jsx';
+import SolicitacaoEventoForm from './SolicitacaoEventoForm.jsx';
 import WeatherWidget from './WeatherWidget.jsx';
+import { Star } from 'lucide-react';
 
 function Estrelas({ valor }) {
   let s = '';
@@ -59,25 +61,34 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
     setComentarios(data || []);
   }
 
-  async function criarEvento() {
-    if (!eventoTitulo.trim() || !eventoData) {
-      mostrarToast('Preencha título e data!', 'erro');
+  const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
+
+  async function enviarSolicitacaoEvento(dadosFormulario) {
+    if (!usuario) {
+      mostrarToast('Faça login para solicitar um evento!', 'erro');
+      onExigirLogin();
       return;
     }
-    const novoEvento = { titulo: eventoTitulo.trim(), descricao: eventoDescricao.trim(), data: eventoData, id_praia: praia.id };
-    let ok = await fazerRequisicaoSupabase('evento', '', 'POST', novoEvento);
-    if (!ok) ok = await fazerRequisicaoSupabase('Evento', '', 'POST', novoEvento);
+
+    setEnviandoSolicitacao(true);
+
+    const payload = {
+      ...dadosFormulario,
+      id_praia: praia.id,
+      id_usuario: usuarioId,
+      // Status = PENDENTE automaticamente
+    };
+
+    const ok = await fazerRequisicaoSupabase('solicitacao_evento', '', 'POST', payload);
 
     if (ok) {
-      mostrarToast('Evento criado! 📅', 'ok');
+      mostrarToast('Solicitação enviada para análise!', 'ok');
       setFormEventoAberto(false);
-      setEventoTitulo('');
-      setEventoDescricao('');
-      setEventoData('');
-      await carregarEventos();
     } else {
-      mostrarToast('Erro ao criar evento.', 'erro');
+      mostrarToast('Erro ao enviar solicitação.', 'erro');
     }
+    
+    setEnviandoSolicitacao(false);
   }
 
   function abrirFormEvento() {
@@ -105,7 +116,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
 
     if (ok) {
       setFormAvaliacaoAberto(false);
-      mostrarToast('Avaliação enviada com sucesso! :-)', 'ok');
+      mostrarToast('Avaliação enviada com sucesso! :)', 'ok');
       await carregarComentarios();
     } else {
       mostrarToast('Não foi possível enviar a avaliação.', 'erro');
@@ -127,12 +138,21 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   return (
     <div className="painel-detalhes">
       <div className="painel-titulo">
-        <div>
-          <h3>{praia.nome}</h3>
-          <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
-        </div>
-        <button className="painel-fechar" onClick={onFechar}>✕</button>
-      </div>
+  <div className="painel-titulo">
+  <div>
+    <h3>{praia.nome}</h3>
+    <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
+    
+    {/* Badge de Dificuldade do Spot */}
+    <div className="spot-difficulty-badge difficulty-intermediate">
+      <span className="difficulty-dot"></span>
+      Nível: Intermediário
+    </div>
+  </div>
+  <button className="painel-fechar" onClick={onFechar}>✕</button>
+</div>
+  <button className="painel-fechar" onClick={onFechar}>✕</button>
+</div>
 
       <div className="praia-dados">
         <div className="info-card"><strong>Popularidade</strong><Estrelas valor={praia.nivel_popularidade} /></div>
@@ -178,17 +198,15 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
         )}
 
         {!formEventoAberto ? (
-          <button className="btn-add-item" onClick={abrirFormEvento}>+ Adicionar Evento</button>
+          <button className="btn-add-item" onClick={abrirFormEvento} style={{ marginTop: '12px' }}>
+            + Solicitar Criação de Evento
+          </button>
         ) : (
-          <div className="form-inline">
-            <input className="form-input" placeholder="Título do evento" value={eventoTitulo} onChange={(e) => setEventoTitulo(e.target.value)} />
-            <textarea className="form-textarea" placeholder="Descrição" value={eventoDescricao} onChange={(e) => setEventoDescricao(e.target.value)} />
-            <input className="form-input" type="date" value={eventoData} onChange={(e) => setEventoData(e.target.value)} />
-            <div className="form-actions">
-              <button className="btn-primary-sm" onClick={criarEvento}>Criar</button>
-              <button className="btn-ghost-sm" onClick={() => setFormEventoAberto(false)}>Cancelar</button>
-            </div>
-          </div>
+          <SolicitacaoEventoForm 
+            onSubmit={enviarSolicitacaoEvento} 
+            onCancel={() => setFormEventoAberto(false)}
+            loading={enviandoSolicitacao}
+          />
         )}
       </div>
 
@@ -247,20 +265,21 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
           ))
         )}
         
-        <button 
-          className="btn-add-item" 
-          onClick={() => {
-            if (!usuario) {
-              mostrarToast('Faça login para avaliar!', 'erro');
-              onExigirLogin();
-            } else {
-              setFormAvaliacaoAberto(true);
-            }
-          }}
-          style={{ width: '100%', marginTop: '10px' }}
-        >
-          Avaliar esta Praia
-        </button>
+<button 
+  type="button"
+  className="btn-avaliar-praia" 
+  onClick={() => {
+    if (!usuario) {
+      mostrarToast('Faça login para avaliar!', 'erro');
+      onExigirLogin();
+    } else {
+      setFormAvaliacaoAberto(true);
+    }
+  }}
+>
+  <Star size={18} className="btn-star-icon" />
+  <span>Avaliar esta Praia</span>
+</button>
       </div>
 
       {formAvaliacaoAberto && (
@@ -300,3 +319,9 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
     </div>
   );
 }
+
+{/* Badge de Dificuldade do Spot */}
+<div className="spot-difficulty-badge difficulty-intermediate">
+  <span className="difficulty-dot"></span>
+  Nível: Intermediário
+</div>
