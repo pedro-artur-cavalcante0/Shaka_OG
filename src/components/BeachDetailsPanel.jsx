@@ -293,7 +293,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
           justifyContent: 'flex-end'
         }}>
           <div style={{
-            backgroundColor: 'var(--bg-panel, #fff)',
+            backgroundColor: 'var(--bg-panel, #000000)',
             borderTopLeftRadius: '24px', 
             borderTopRightRadius: '24px',
             padding: '20px', 
