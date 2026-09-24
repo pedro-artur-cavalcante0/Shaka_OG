@@ -1,4 +1,4 @@
-// controllers/praias.controller.js
+
 import { supabaseAdmin } from '../config/supabaseClient.js';
 
 export async function listarPraias(req, res) {

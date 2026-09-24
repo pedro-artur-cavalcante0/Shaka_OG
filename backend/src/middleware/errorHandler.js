@@ -1,5 +1,5 @@
 
-export function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-vars
+export function errorHandler(err, req, res, next) { 
   console.error(err);
 
   const status = err.status || 500;

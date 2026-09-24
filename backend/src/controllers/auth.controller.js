@@ -1,7 +1,5 @@
 
-// substitui a lógica que hoje vive em src/hooks/useAuth.js no front. A
-// diferença essencial: senha nunca é comparada nem guardada em texto puro.
-//
+
 
 
 import bcrypt from 'bcryptjs';
