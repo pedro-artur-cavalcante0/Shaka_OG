@@ -29,17 +29,19 @@ export async function registrar(req, res) {
     return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios.' });
   }
 
-  const { data: existente, error: erroBusca } = await supabaseAdmin
-    .from('usuario')
-    .select('id')
-    .or(`email.eq.${email},nome.eq.${nome}`)
-    .maybeSingle();
+  const [porNome, porEmail] = await Promise.all([
+    supabaseAdmin.from('usuario').select('id').eq('nome', nome).limit(1),
+    supabaseAdmin.from('usuario').select('id').eq('email', email).limit(1),
+  ]);
 
+  const erroBusca = porNome.error || porEmail.error;
   if (erroBusca) {
     console.error(erroBusca);
     return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
   }
-  if (existente) return res.status(409).json({ erro: 'Usuário ou email já cadastrado.' });
+  if (porNome.data.length || porEmail.data.length) {
+    return res.status(409).json({ erro: 'Usuário ou email já cadastrado.' });
+  }
 
   const senha_hash = await bcrypt.hash(senha, SALT_ROUNDS);
 
