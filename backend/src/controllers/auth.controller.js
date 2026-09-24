@@ -18,8 +18,8 @@ function gerarToken(usuario) {
 }
 
 function paraPublico(usuario) {
-  const { id, nome, email, role } = usuario;
-  return { id, nome, email, role };
+  const { id, nome, email, foto, role } = usuario;
+  return { id, nome, email, foto, role };
 }
 
 export async function registrar(req, res) {
