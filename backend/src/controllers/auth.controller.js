@@ -67,21 +67,41 @@ export async function login(req, res) {
     return res.status(400).json({ erro: 'Nome e senha são obrigatórios.' });
   }
 
+  const { data: candidatos, error } = await supabaseAdmin
+    .from('usuario')
+    .select('*')
+    .eq('nome', nome);
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
+  }
+
+  let usuario = null;
+  for (const candidato of candidatos) {
+    if (await bcrypt.compare(senha, candidato.senha_hash || '')) {
+      usuario = candidato;
+      break;
+    }
+  }
+  if (!usuario) return res.status(401).json({ erro: 'Nome ou senha inválidos.' });
+
+  const token = gerarToken(usuario);
+  return res.json({ token, usuario: paraPublico(usuario) });
+}
+
+export async function eu(req, res) {
   const { data: usuario, error } = await supabaseAdmin
     .from('usuario')
     .select('*')
-    .eq('nome', nome)
+    .eq('id', req.usuario.id)
     .maybeSingle();
 
   if (error) {
     console.error(error);
     return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
   }
-  if (!usuario) return res.status(404).json({ erro: 'Usuário não encontrado.' });
+  if (!usuario) return res.status(401).json({ erro: 'Sessão inválida ou expirada.' });
 
-  const senhaConfere = await bcrypt.compare(senha, usuario.senha_hash || '');
-  if (!senhaConfere) return res.status(401).json({ erro: 'Senha incorreta.' });
-
-  const token = gerarToken(usuario);
-  return res.json({ token, usuario: paraPublico(usuario) });
+  return res.json({ usuario: paraPublico(usuario) });
 }
