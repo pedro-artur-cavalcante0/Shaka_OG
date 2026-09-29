@@ -181,7 +181,7 @@ export default function AvaliacaoForm({ onSubmit, loading }) {
   };
 
   return (
-    <div className="avaliacao-form-container">
+    <div className="modal-form">
       <h3 className="modal-title-eval">Avalie esta praia</h3>
       
       {/* Bloco de Avaliações Quantitativas */}

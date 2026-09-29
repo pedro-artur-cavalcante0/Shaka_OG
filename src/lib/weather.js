@@ -1,4 +1,8 @@
 // lib/weather.js
+import { paraISOLocal } from './dataUtil.js';
+
+// Hora usada nos cards (vento, onda, UV...) quando o dia escolhido NÃO é hoje.
+export const HORA_REFERENCIA_PREVISAO = 9;
 
 export const WMO_CODES = {
   0: '☀️|Céu limpo', 1: '🌤|Poucas nuvens', 2: '⛅|Parcialmente nublado', 3: '☁️|Nublado',
@@ -235,16 +239,54 @@ function encontrarIndicePorHora(times, hora) {
   return times.findIndex(t => t === hora);
 }
 
-export async function carregarClima(lat, lon, modalidade = 'surf') {
+// ---------------------------------------------------------------------------
+// Cache simples em memória: alternar entre dias já vistos não refaz requisição.
+// ---------------------------------------------------------------------------
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const cacheClima = new Map();
+
+const HOURLY_ATM =
+  'weather_code,wind_speed_10m,temperature_2m,relative_humidity_2m,' +
+  'wind_gusts_10m,wind_direction_10m,uv_index';
+
+const HOURLY_MARINE =
+  'wave_height,wave_period,wave_direction,swell_wave_height,sea_level_height_msl';
+
+/**
+ * Carrega as condições de uma praia para um dia específico.
+ *
+ * @param {number} lat
+ * @param {number} lon
+ * @param {string} dataISO   'YYYY-MM-DD' (padrão: hoje). Hoje usa dados "current";
+ *                           outros dias usam a hora de referência (09:00).
+ * @param {string} modalidade usada só para o score retornado no objeto (o widget recalcula).
+ */
+export async function carregarClima(lat, lon, dataISO = paraISOLocal(), modalidade = 'surf') {
+  const ehHoje = dataISO === paraISOLocal();
+  const horaRef = ehHoje ? new Date().getHours() : HORA_REFERENCIA_PREVISAO;
+
+  const chaveCache = `${Number(lat).toFixed(3)},${Number(lon).toFixed(3)},${dataISO},${modalidade}`;
+  const emCache = cacheClima.get(chaveCache);
+  if (emCache && Date.now() - emCache.ts < CACHE_TTL_MS) return emCache.dados;
+
+  const periodoUrl = ehHoje
+    ? '&forecast_days=1'
+    : `&start_date=${dataISO}&end_date=${dataISO}`;
+
+  // ------------------------------------------------------------------
+  // Atmosfera
+  // ------------------------------------------------------------------
   let atm;
   try {
     const urlAtm =
       `https://api.open-meteo.com/v1/forecast?` +
       `latitude=${lat}&longitude=${lon}` +
-      `&current=temperature_2m,relative_humidity_2m,weather_code,` +
-      `wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index` +
-      `&hourly=weather_code,wind_speed_10m` +
-      `&forecast_days=1` +
+      (ehHoje
+        ? `&current=temperature_2m,relative_humidity_2m,weather_code,` +
+          `wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index`
+        : '') +
+      `&hourly=${HOURLY_ATM}` +
+      periodoUrl +
       `&wind_speed_unit=kmh&timezone=America%2FFortaleza`;
 
     const res = await fetchComTimeout(urlAtm, 8000);
@@ -255,28 +297,69 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
     return { erro: true };
   }
 
+  // "c" = condições de referência: current (hoje) ou a hora de referência do dia
+  let c;
+  if (ehHoje) {
+    c = atm.current;
+  } else {
+    const h = atm.hourly;
+    const i = Array.isArray(h?.time)
+      ? h.time.findIndex(t => horaIndexDeIso(t) === horaRef)
+      : -1;
+    if (i >= 0) {
+      c = {
+        time: h.time[i],
+        temperature_2m: h.temperature_2m?.[i],
+        relative_humidity_2m: h.relative_humidity_2m?.[i],
+        weather_code: h.weather_code?.[i],
+        wind_speed_10m: h.wind_speed_10m?.[i],
+        wind_gusts_10m: h.wind_gusts_10m?.[i],
+        wind_direction_10m: h.wind_direction_10m?.[i],
+        uv_index: h.uv_index?.[i],
+      };
+    }
+  }
+  if (!c) return { erro: true };
+
+  // ------------------------------------------------------------------
+  // Mar (ondas + maré)
+  // ------------------------------------------------------------------
   let ondasAtual = null;
   let ondasHorario = null;
   try {
     const urlOnda =
       `https://marine-api.open-meteo.com/v1/marine?` +
       `latitude=${lat}&longitude=${lon}` +
-      `&current=wave_height,wave_period,wave_direction,swell_wave_height` +
-      `&hourly=wave_height,wave_period,sea_level_height_msl` +
-      `&forecast_days=1&models=best_match` +
-      `&timezone=America%2FFortaleza`;
+      (ehHoje
+        ? `&current=wave_height,wave_period,wave_direction,swell_wave_height`
+        : '') +
+      `&hourly=${HOURLY_MARINE}` +
+      periodoUrl +
+      `&models=best_match&timezone=America%2FFortaleza`;
 
     const res = await fetchComTimeout(urlOnda, 7000);
     if (res.ok) {
       const json = await res.json();
-      if (json.current && json.current.wave_height != null) ondasAtual = json.current;
       if (json.hourly && Array.isArray(json.hourly.time)) ondasHorario = json.hourly;
+
+      if (ehHoje) {
+        if (json.current && json.current.wave_height != null) ondasAtual = json.current;
+      } else if (ondasHorario) {
+        const i = ondasHorario.time.findIndex(t => horaIndexDeIso(t) === horaRef);
+        if (i >= 0 && ondasHorario.wave_height?.[i] != null) {
+          ondasAtual = {
+            wave_height: ondasHorario.wave_height[i],
+            wave_period: ondasHorario.wave_period?.[i],
+            wave_direction: ondasHorario.wave_direction?.[i],
+            swell_wave_height: ondasHorario.swell_wave_height?.[i],
+          };
+        }
+      }
     }
   } catch (err) {
     console.warn('[Clima] Marine API indisponível — usando estimativa.');
   }
 
-  const c = atm.current;
   const wmoCode = c.weather_code ?? 0;
   const ventoKmh = c.wind_speed_10m ?? 0;
   const rajadaKmh = c.wind_gusts_10m ?? 0;
@@ -301,7 +384,7 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
     estimado = true;
   }
 
-  // Utiliza a função de cálculo específica da modalidade atual
+  // Utiliza a função de cálculo específica da modalidade
   const funcaoCalculo = MODALIDADES[modalidade]?.calcular || calcularScoreSurf;
   const dadosAtuais = { alturaOnda, periodoOnda, ventoKmh, wmoCode };
   const { score, desc: scoreDesc } = funcaoCalculo(dadosAtuais);
@@ -310,8 +393,13 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
   const [emoji, descClima] = wmoInfo.split('|');
   const uvLabels = ['Mínimo', 'Baixo', 'Moderado', 'Alto', 'Muito alto', 'Extremo'];
   const uvLabel = uvLabels[Math.min(Math.floor(uvIndex / 3), 5)];
-  const hora = new Date(c.time ?? Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
+  // Hoje: horário da leitura. Outros dias: hora de referência da previsão.
+  const hora = ehHoje
+    ? new Date(c.time ?? Date.now()).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    : `${String(horaRef).padStart(2, '0')}:00`;
+
+  // Maré do dia pedido (a Marine API já devolve só o dia solicitado)
   let mare = [];
   let mareAlta = null;
   let mareBaixa = null;
@@ -331,6 +419,7 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
     }
   }
 
+  // Horas do dia (usadas para achar a melhor janela)
   let horasBrutas = [];
   if (atm.hourly && Array.isArray(atm.hourly.time)) {
     horasBrutas = atm.hourly.time.map((t, i) => {
@@ -351,15 +440,18 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
       }
 
       return { horaIdx, alturaOnda: altH, periodoOnda: perH, ventoKmh: ventoH, wmoCode: wmoH };
-    }).filter(h => h.horaIdx >= 5 && h.horaIdx <= 18); // FIX: Restrito estritamente ao diurno (05:00 às 18:00)
+    }).filter(h => h.horaIdx >= 5 && h.horaIdx <= 18); // Restrito ao diurno (05:00 às 18:00)
   }
 
   const melhorPeriodo = horasBrutas.length
     ? calcularMelhorPeriodo(horasBrutas.map((h) => ({ horaIdx: h.horaIdx, ...funcaoCalculo(h) })))
     : null;
 
-  return {
+  const resultado = {
     erro: false,
+    data: dataISO,
+    ehHoje,
+    horaRef,
     emoji,
     descClima,
     temp: Math.round(temp),
@@ -370,6 +462,7 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
     rajadaKmh: Math.round(rajadaKmh),
     alturaOnda,
     periodoOnda,
+    dirOnda,
     estimado,
     swellH,
     umidade,
@@ -385,4 +478,7 @@ export async function carregarClima(lat, lon, modalidade = 'surf') {
     melhorPeriodo,
     horasBrutas,
   };
+
+  cacheClima.set(chaveCache, { ts: Date.now(), dados: resultado });
+  return resultado;
 }

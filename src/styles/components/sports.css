@@ -14,6 +14,7 @@
   color: var(--text-1);
   line-height: 1;
 }
+
 .section-desc { font-size: 0.9rem; color: var(--text-2); margin-top: 6px; }
 
 .spots-section { background: var(--bg); }
@@ -26,6 +27,46 @@
   padding: 56px 32px 24px;
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
+}
+
+.clima-filtro {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.clima-filtro .clima-dias { flex: 1; min-width: 0; }
+
+.clima-data-input {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: .68rem;
+  letter-spacing: .04em;
+  color: #94a3b8;
+}
+.clima-data-input input {
+  padding: 7px 8px;
+  background: rgba(148,163,184,.08);
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 12px;
+  color: #e2e8f0;
+  font: inherit;
+  font-size: .85rem;
+  color-scheme: dark;
+  cursor: pointer;
+}
+.clima-data-input input:focus {
+  outline: none;
+  border-color: #2dd4bf;
+}
+
+@media (max-width: 480px) {
+  .clima-filtro { flex-direction: column; }
+  .clima-filtro .clima-dias { width: 100%; }
+  .clima-data-input { width: 100%; }
+  .clima-data-input input { width: 100%; }
 }
 
 .spots-search-wrap { position: relative; flex-shrink: 0; }

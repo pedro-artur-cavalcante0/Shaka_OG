@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { calcularScore, calcularMelhorPeriodo, MODALIDADES } from '../lib/weather.js';
+import { proximosDias, paraISOLocal } from '../lib/dataUtil.js';
 
-function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel }) {
+function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel, mostrarAgora = true }) {
   if (!mare || mare.length < 2) {
     return (
       <div className="clima-mare-indisponivel">
@@ -34,14 +35,9 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
 
   const range = max - min || 1;
 
-  const x = i =>
-    padLeft +
-    (i / (mare.length - 1)) * graphW;
+  const x = i => padLeft + (i / (mare.length - 1)) * graphW;
 
-  const y = valor =>
-    padTop +
-    graphH -
-    ((valor - min) / range) * graphH;
+  const y = valor => padTop + graphH - ((valor - min) / range) * graphH;
 
   // ------------------------------------------------------------
   // Linha suave
@@ -61,45 +57,29 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
       }
 
       const anterior = pontos[i - 1];
-
       const cx = (anterior.x + p.x) / 2;
 
-      return `
-        C
-        ${cx.toFixed(1)} ${anterior.y.toFixed(1)},
-        ${cx.toFixed(1)} ${p.y.toFixed(1)},
-        ${p.x.toFixed(1)} ${p.y.toFixed(1)}
-      `;
+      return `C ${cx.toFixed(1)} ${anterior.y.toFixed(1)}, ${cx.toFixed(1)} ${p.y.toFixed(1)}, ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
     })
     .join(' ');
 
   const area =
-    `${linha}
-     L ${pontos[pontos.length - 1].x.toFixed(1)} ${padTop + graphH}
-     L ${pontos[0].x.toFixed(1)} ${padTop + graphH}
-     Z`;
+    `${linha} L ${pontos[pontos.length - 1].x.toFixed(1)} ${padTop + graphH} ` +
+    `L ${pontos[0].x.toFixed(1)} ${padTop + graphH} Z`;
 
   // ------------------------------------------------------------
-  // Agora
+  // Agora (só aparece quando o dia selecionado é hoje)
   // ------------------------------------------------------------
 
-  const agora = new Date();
+  const horaAtual = new Date().getHours();
 
-  const horaAtual = agora.getHours();
-  const minutoAtual = agora.getMinutes();
-
-  let idxAgora = mare.findIndex(
-    p => p.horaIdx === horaAtual
-  );
+  let idxAgora = mare.findIndex(p => p.horaIdx === horaAtual);
 
   if (idxAgora < 0) {
-    idxAgora = Math.min(
-      mare.length - 1,
-      Math.max(0, horaAtual)
-    );
+    idxAgora = Math.min(mare.length - 1, Math.max(0, horaAtual));
   }
 
-  const pontoAgora = pontos[idxAgora];
+  const pontoAgora = mostrarAgora ? pontos[idxAgora] : null;
 
   // ------------------------------------------------------------
   // Encontrar alta e baixa
@@ -156,63 +136,30 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
 
       <div className="clima-mare-header">
         <div>
-          <span className="clima-mare-title">
-            Nível da maré
-          </span>
-
-          <span className="clima-mare-unit">
-            metros
-          </span>
+          <span className="clima-mare-title">Nível da maré</span>
+          <span className="clima-mare-unit">metros</span>
         </div>
 
         {estimado && (
-          <span className="clima-mare-estimado">
-            ESTIMADA
-          </span>
+          <span className="clima-mare-estimado">ESTIMADA</span>
         )}
       </div>
 
       <div className="clima-mare-svg-wrap">
-       <svg
-  viewBox={`0 0 ${W} ${H}`}
-  width="100%"
-  height="220"
-  preserveAspectRatio="xMidYMid meet"
->
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          width="100%"
+          height="220"
+          preserveAspectRatio="xMidYMid meet"
+        >
           <defs>
-
-            <linearGradient
-              id="mareGradient"
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
-              <stop
-                offset="0%"
-                stopColor="#2dd4bf"
-                stopOpacity="0.32"
-              />
-
-              <stop
-                offset="100%"
-                stopColor="#2dd4bf"
-                stopOpacity="0.015"
-              />
+            <linearGradient id="mareGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.32" />
+              <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.015" />
             </linearGradient>
 
-            <filter
-              id="mareGlow"
-              x="-50%"
-              y="-50%"
-              width="200%"
-              height="200%"
-            >
-              <feGaussianBlur
-                stdDeviation="2"
-                result="blur"
-              />
-
+            <filter id="mareGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -247,6 +194,8 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
             stroke="rgba(148,163,184,0.10)"
           />
 
+          {/* Janela ideal */}
+
           {idxJanelaIni >= 0 && idxJanelaFim >= idxJanelaIni && (
             <>
               <rect
@@ -274,11 +223,7 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
 
           {/* Área */}
 
-          <path
-            d={area}
-            fill="url(#mareGradient)"
-            stroke="none"
-          />
+          <path d={area} fill="url(#mareGradient)" stroke="none" />
 
           {/* Linha principal */}
 
@@ -362,7 +307,7 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
             </>
           )}
 
-          {/* AGORA */}
+          {/* AGORA (somente hoje) */}
 
           {pontoAgora && (
             <>
@@ -429,43 +374,22 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
 
           {/* Valores laterais */}
 
-          <text
-            x="4"
-            y={y(max) + 4}
-            fill="#64748b"
-            fontSize="10"
-          >
+          <text x="4" y={y(max) + 4} fill="#64748b" fontSize="10">
             {max.toFixed(1)}
           </text>
 
-          <text
-            x="4"
-            y={nivelZero + 4}
-            fill="#64748b"
-            fontSize="10"
-          >
+          <text x="4" y={nivelZero + 4} fill="#64748b" fontSize="10">
             0.0
           </text>
 
-          <text
-            x="4"
-            y={y(min) + 4}
-            fill="#64748b"
-            fontSize="10"
-          >
+          <text x="4" y={y(min) + 4} fill="#64748b" fontSize="10">
             {min.toFixed(1)}
           </text>
 
           {/* Pontos invisíveis para tooltip */}
 
           {pontos.map((p, i) => (
-            <circle
-              key={i}
-              cx={p.x}
-              cy={p.y}
-              r="8"
-              fill="transparent"
-            >
+            <circle key={i} cx={p.x} cy={p.y} r="8" fill="transparent">
               <title>
                 {p.hora} • {p.altura.toFixed(2)} m
               </title>
@@ -476,83 +400,132 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel 
 
       {/* Cards de alta / baixa */}
 
-     <div className="clima-mare-extremos">
+      <div className="clima-mare-extremos">
 
         {mareAlta && (
-    <div className="clima-mare-extremo clima-mare-alta">
+          <div className="clima-mare-extremo clima-mare-alta">
+            <div className="clima-mare-extremo-icon">↑</div>
 
-      <div className="clima-mare-extremo-icon">
-        ↑
-      </div>
-
-      <div className="clima-mare-extremo-content">
-        <span>MARÉ ALTA</span>
-
-        <strong>
-          {Math.abs(mareAlta.altura).toFixed(1)} m
-        </strong>
-
-        <small>
-          {mareAlta.hora}
-        </small>
-      </div>
-
-    </div>
-  )}
-
+            <div className="clima-mare-extremo-content">
+              <span>MARÉ ALTA</span>
+              <strong>{Math.abs(mareAlta.altura).toFixed(1)} m</strong>
+              <small>{mareAlta.hora}</small>
+            </div>
+          </div>
+        )}
 
         {mareBaixa && (
-    <div className="clima-mare-extremo clima-mare-baixa">
+          <div className="clima-mare-extremo clima-mare-baixa">
+            <div className="clima-mare-extremo-icon">↓</div>
 
-      <div className="clima-mare-extremo-icon">
-        ↓
-      </div>
-
-      <div className="clima-mare-extremo-content">
-        <span>MARÉ BAIXA</span>
-
-        <strong>
-          {Math.abs(mareBaixa.altura).toFixed(1)} m
-        </strong>
-
-        <small>
-          {mareBaixa.hora}
-        </small>
-      </div>
-
-    </div>
-  )}
+            <div className="clima-mare-extremo-content">
+              <span>MARÉ BAIXA</span>
+              <strong>{Math.abs(mareBaixa.altura).toFixed(1)} m</strong>
+              <small>{mareBaixa.hora}</small>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>
   );
 }
 
-export default function WeatherWidget({ carregando, clima }) {
-  if (carregando) {
-    return (
-      <div className="clima-painel">
+// ---------------------------------------------------------------------------
+// Seletor de dia
+// ---------------------------------------------------------------------------
+
+// Quantos dias à frente o usuário pode escolher (a Marine API cobre ~7 dias)
+const DIAS_MAX_FUTURO = 7;
+
+function SeletorDia({ data, onMudar }) {
+  const dias = useMemo(() => proximosDias(7), []);
+
+  const limites = useMemo(() => {
+    const max = new Date();
+    max.setDate(max.getDate() + DIAS_MAX_FUTURO);
+    return { min: paraISOLocal(), max: paraISOLocal(max) };
+  }, []);
+
+  function aoEscolherData(e) {
+    const valor = e.target.value; // 'YYYY-MM-DD' ou '' se o campo foi limpo
+    if (!valor) return;
+    if (valor < limites.min || valor > limites.max) return; // ISO compara como texto
+    onMudar(valor);
+  }
+
+  return (
+    <div className="clima-filtro">
+      <div className="clima-dias" role="tablist" aria-label="Escolher dia">
+        {dias.map((d) => (
+          <button
+            key={d.iso}
+            type="button"
+            role="tab"
+            aria-selected={data === d.iso}
+            className={`clima-dia-btn${data === d.iso ? ' ativo' : ''}`}
+            onClick={() => onMudar(d.iso)}
+          >
+            <span className="clima-dia-semana">{d.semana}</span>
+            <strong>{d.dia}</strong>
+          </button>
+        ))}
+      </div>
+
+      <label className="clima-data-input">
+        <span>Data</span>
+        <input
+          type="date"
+          value={data}
+          min={limites.min}
+          max={limites.max}
+          onChange={aoEscolherData}
+        />
+      </label>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Widget principal
+// ---------------------------------------------------------------------------
+
+export default function WeatherWidget({ carregando, clima, data, onMudarData }) {
+  const semDados = !clima || clima.erro;
+
+  return (
+    <div className="clima-painel">
+      <SeletorDia data={data} onMudar={onMudarData} />
+
+      {carregando && semDados ? (
         <div className="clima-loading">
           <span className="loading-spinner" /> Carregando condições...
         </div>
-      </div>
-    );
-  }
-
-  if (!clima || clima.erro) {
-    return (
-      <div className="clima-painel">
-        <div className="clima-erro">Não foi possível carregar as condições climáticas.</div>
-      </div>
-    );
-  }
-
-  const fontOnda = clima.estimado ? ' (est.)' : '';
-
-  return <WeatherWidgetConteudo clima={clima} fontOnda={fontOnda} />;
+      ) : semDados ? (
+        <div className="clima-erro">
+          Não foi possível carregar as condições para este dia.
+        </div>
+      ) : (
+        <div style={{ opacity: carregando ? 0.5 : 1, transition: 'opacity .2s' }}>
+          <WeatherWidgetConteudo
+            clima={clima}
+            data={data}
+            fontOnda={clima.estimado ? ' (est.)' : ''}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
-function WeatherWidgetConteudo({ clima, fontOnda }) {
+function WeatherWidgetConteudo({ clima, fontOnda, data }) {
+  const ehHoje = data === paraISOLocal();
+  const dataLabel = new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+  });
+
   const [modalidade, setModalidade] = useState('surf');
   const modalidadeAtual = MODALIDADES[modalidade];
 
@@ -579,153 +552,136 @@ function WeatherWidgetConteudo({ clima, fontOnda }) {
   const scoreColor = scoreAtual.score >= 7 ? '#2dd4bf' : scoreAtual.score >= 5 ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="clima-painel">
-      <div className="clima-conteudo">
-        <div className="clima-principal">
-          <div className="clima-temp-wrap">
-            <span className="clima-icone-grande">{clima.emoji}</span>
-            <div>
-              <span className="clima-temp">{clima.temp}°C</span>
-              <span className="clima-desc">{clima.descClima}</span>
+    <div className="clima-conteudo">
+      <div className="clima-principal">
+        <div className="clima-temp-wrap">
+          <span className="clima-icone-grande">{clima.emoji}</span>
+          <div>
+            <span className="clima-temp">{clima.temp}°C</span>
+            <span className="clima-desc">{clima.descClima}</span>
+          </div>
+        </div>
+        <div className="clima-atualizado">
+          {ehHoje
+            ? `Atualizado ${clima.hora}`
+            : `Previsão · ${dataLabel} às ${clima.hora}`}
+        </div>
+      </div>
+
+      <div className="clima-grid">
+        <div className="clima-item">
+          <span className="clima-item-label">Vento</span>
+          <span className="clima-item-val">{clima.ventoKmh} km/h</span>
+          <span className="clima-item-sub">{clima.dirVentoTexto}</span>
+        </div>
+        <div className="clima-item">
+          <span className="clima-item-label">Rajada</span>
+          <span className="clima-item-val">{clima.rajadaKmh} km/h</span>
+          <span className="clima-item-sub">máx.</span>
+        </div>
+        <div className="clima-item">
+          <span className="clima-item-label">Onda</span>
+          <span className="clima-item-val">{clima.alturaOnda.toFixed(1)} m{fontOnda}</span>
+          <span className="clima-item-sub">{clima.periodoOnda}s</span>
+        </div>
+        <div className="clima-item">
+          <span className="clima-item-label">Umidade</span>
+          <span className="clima-item-val">{clima.umidade}%</span>
+          <span className="clima-item-sub">relativa</span>
+        </div>
+        <div className="clima-item">
+          <span className="clima-item-label">UV</span>
+          <span className="clima-item-val">{clima.uvIndex.toFixed(1)}</span>
+          <span className="clima-item-sub">{clima.uvLabel}</span>
+        </div>
+      </div>
+
+      <div className="clima-modalidade-selector">
+        {Object.entries(MODALIDADES).map(([chave, config]) => (
+          <button
+            key={chave}
+            type="button"
+            className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
+            onClick={() => setModalidade(chave)}
+          >
+            <span>{config.emoji}</span> {config.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="clima-secao">
+        <span className="clima-secao-titulo">
+          {ehHoje ? 'Maré do dia' : `Maré · ${dataLabel}`}
+        </span>
+        <GraficoMare
+          mare={clima.mare}
+          mareAlta={clima.mareAlta}
+          mareBaixa={clima.mareBaixa}
+          estimado={clima.mareEstimada}
+          janela={melhorPeriodoAtual}
+          janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
+          mostrarAgora={ehHoje}
+        />
+      </div>
+
+      {melhorPeriodoAtual && (
+        <div className="clima-melhor-periodo">
+
+          <div className="clima-melhor-header">
+            <div className="clima-melhor-title-wrap">
+              <div className="clima-melhor-icon">{modalidadeAtual.emoji}</div>
+
+              <div>
+                <span className="clima-melhor-overline">MELHOR JANELA</span>
+                <span className="clima-melhor-title">
+                  Hora mais favorável para {modalidadeAtual.label.toLowerCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="clima-melhor-score">
+              <strong>{melhorPeriodoAtual.score.toFixed(1)}</strong>
+              <span>/10</span>
             </div>
           </div>
-          <div className="clima-atualizado">Atualizado {clima.hora}</div>
-        </div>
 
-        <div className="clima-grid">
-          <div className="clima-item">
-            <span className="clima-item-label">Vento</span>
-            <span className="clima-item-val">{clima.ventoKmh} km/h</span>
-            <span className="clima-item-sub">{clima.dirVentoTexto}</span>
-          </div>
-          <div className="clima-item">
-            <span className="clima-item-label">Rajada</span>
-            <span className="clima-item-val">{clima.rajadaKmh} km/h</span>
-            <span className="clima-item-sub">máx.</span>
-          </div>
-          <div className="clima-item">
-            <span className="clima-item-label">Onda</span>
-            <span className="clima-item-val">{clima.alturaOnda.toFixed(1)} m{fontOnda}</span>
-            <span className="clima-item-sub">{clima.periodoOnda}s</span>
-          </div>
-          <div className="clima-item">
-            <span className="clima-item-label">Umidade</span>
-            <span className="clima-item-val">{clima.umidade}%</span>
-            <span className="clima-item-sub">relativa</span>
-          </div>
-          <div className="clima-item">
-            <span className="clima-item-label">UV</span>
-            <span className="clima-item-val">{clima.uvIndex.toFixed(1)}</span>
-            <span className="clima-item-sub">{clima.uvLabel}</span>
-          </div>
-        </div>
+          <div className="clima-melhor-horario">
+            <div className="clima-hora">{melhorPeriodoAtual.inicio}</div>
 
-        <div className="clima-modalidade-selector">
-          {Object.entries(MODALIDADES).map(([chave, config]) => (
-            <button
-              key={chave}
-              type="button"
-              className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
-              onClick={() => setModalidade(chave)}
-            >
-              <span>{config.emoji}</span> {config.label}
-            </button>
-          ))}
-        </div>
+            <div className="clima-horario-linha">
+              <div className="clima-horario-ponto" />
+              <div className="clima-horario-traco" />
+              <div className="clima-horario-ponto" />
+            </div>
 
-        <div className="clima-secao">
-          <span className="clima-secao-titulo">Maré do dia</span>
-          <GraficoMare
-            mare={clima.mare}
-            mareAlta={clima.mareAlta}
-            mareBaixa={clima.mareBaixa}
-            estimado={clima.mareEstimada}
-            janela={melhorPeriodoAtual}
-            janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
+            <div className="clima-hora">{melhorPeriodoAtual.fim}</div>
+          </div>
+
+          <div className="clima-melhor-bottom">
+            <span className="clima-melhor-status">{melhorPeriodoAtual.desc}</span>
+
+            <span className="clima-melhor-info">
+              Janela de {parseInt(melhorPeriodoAtual.fim, 10) - parseInt(melhorPeriodoAtual.inicio, 10)} horas
+            </span>
+          </div>
+
+        </div>
+      )}
+
+      <div className="clima-score-wrap">
+        <div className="clima-score-label">
+          <span>
+            Score para {modalidadeAtual.label.toLowerCase()} {ehHoje ? 'agora' : 'neste dia'}
+          </span>
+          <span className="clima-score-num">{scoreAtual.score}/10</span>
+        </div>
+        <div className="clima-score-bar">
+          <div
+            className="clima-score-fill"
+            style={{ width: `${scoreAtual.score * 10}%`, background: scoreColor }}
           />
         </div>
-
-    {melhorPeriodoAtual && (
-  <div className="clima-melhor-periodo">
-
-    <div className="clima-melhor-header">
-
-      <div className="clima-melhor-title-wrap">
-
-        <div className="clima-melhor-icon">
-          {modalidadeAtual.emoji}
-        </div>
-
-        <div>
-          <span className="clima-melhor-overline">
-            MELHOR JANELA
-          </span>
-
-          <span className="clima-melhor-title">
-            Hora mais favorável para {modalidadeAtual.label.toLowerCase()}
-          </span>
-        </div>
-
-      </div>
-
-      <div className="clima-melhor-score">
-        <strong>
-          {melhorPeriodoAtual.score.toFixed(1)}
-        </strong>
-
-        <span>/10</span>
-      </div>
-
-    </div>
-
-
-    <div className="clima-melhor-horario">
-
-      <div className="clima-hora">
-        {melhorPeriodoAtual.inicio}
-      </div>
-
-      <div className="clima-horario-linha">
-        <div className="clima-horario-ponto" />
-        <div className="clima-horario-traco" />
-        <div className="clima-horario-ponto" />
-      </div>
-
-      <div className="clima-hora">
-        {melhorPeriodoAtual.fim}
-      </div>
-
-    </div>
-
-
-    <div className="clima-melhor-bottom">
-
-      <span className="clima-melhor-status">
-        {melhorPeriodoAtual.desc}
-      </span>
-
-      <span className="clima-melhor-info">
-        Janela de {(
-          parseInt(melhorPeriodoAtual.fim) -
-          parseInt(melhorPeriodoAtual.inicio)
-        )} horas
-      </span>
-
-    </div>
-
-  </div>
-)}
-
-        <div className="clima-score-wrap">
-          <div className="clima-score-label">
-            <span>Score para {modalidadeAtual.label.toLowerCase()} agora</span>
-            <span className="clima-score-num">{scoreAtual.score}/10</span>
-          </div>
-          <div className="clima-score-bar">
-            <div className="clima-score-fill" style={{ width: `${scoreAtual.score * 10}%`, background: scoreColor }} />
-          </div>
-          <span className="clima-score-desc">{scoreAtual.desc}</span>
-        </div>
+        <span className="clima-score-desc">{scoreAtual.desc}</span>
       </div>
     </div>
   );
