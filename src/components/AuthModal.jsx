@@ -47,7 +47,6 @@ export default function AuthModal({ aberto, onFechar, autenticar }) {
             />
           </div>
 
-          {modo === 'cadastro' && (
             <div className="form-group">
               <label>Email</label>
               <input
@@ -56,9 +55,9 @@ export default function AuthModal({ aberto, onFechar, autenticar }) {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
-          )}
 
           <div className="form-group">
             <label>Senha</label>

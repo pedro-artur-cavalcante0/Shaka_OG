@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { fazerRequisicaoSupabase } from '../lib/supabase.js';
+import { supabase } from '../lib/supabase.js'
 
 export function useAuth(mostrarToast) {
 
@@ -53,164 +54,87 @@ export function useAuth(mostrarToast) {
 
   }, []);
 
-
-  const autenticar = useCallback(
+const autenticar = useCallback(
     async ({ modo, nome, email, senha }) => {
-
-      if (!nome || !senha) {
-        mostrarToast('Preencha todos os campos!', 'erro');
+      if (!email || !senha) {
+        mostrarToast('Preencha email e senha!', 'erro');
         return false;
       }
 
-
       if (modo === 'cadastro') {
-
-        if (!email) {
-          mostrarToast(
-            'Email é obrigatório para cadastro!',
-            'erro'
-          );
-
+        if (!nome) {
+          mostrarToast('O nome é obrigatório para cadastro!', 'erro');
           return false;
         }
 
-
-        const novoUser = {
-          id: crypto.randomUUID(),
-          nome,
+        // Criar usuário no Supabase
+        const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
-          senha
-        };
+          password: senha,
+        });
 
+        if (authError) {
+          mostrarToast(`Erro: ${authError.message}`, 'erro');
+          return false;
+        }
 
-        let ok = await fazerRequisicaoSupabase(
+        // Salvar no supabase
+        if (authData.user) {
+          const novoUser = {
+            id: authData.user.id,
+            nome,
+            email,
+            role: 'user'
+          };
+
+          const ok = await fazerRequisicaoSupabase('usuario', '', 'POST', novoUser);
+
+          if (ok) {
+            setUsuario(novoUser);
+            setUsuarioId(novoUser.id);
+            mostrarToast(`Bem-vindo, ${nome}! 🌊`, 'ok');
+            return true;
+          }
+        }
+        return false;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: senha,
+      });
+
+      if (error) {
+        mostrarToast('Email ou senha incorretos!', 'erro');
+        return false;
+      }
+
+      if (data.user) {
+        const perfis = await fazerRequisicaoSupabase(
           'usuario',
-          '',
-          'POST',
-          novoUser
+          `id=eq.${data.user.id}`
         );
 
-
-        if (!ok) {
-          ok = await fazerRequisicaoSupabase(
-            'Usuario',
-            '',
-            'POST',
-            novoUser
-          );
-        }
-
-
-        if (ok) {
-
-          setUsuario(novoUser);
-          setUsuarioId(novoUser.id);
-
-          localStorage.setItem(
-            'shakaUsuario',
-            JSON.stringify(novoUser)
-          );
-
-          mostrarToast(
-            `Bem-vindo, ${nome}! 🌊`,
-            'ok'
-          );
-
+        if (perfis && perfis.length > 0) {
+          setUsuario(perfis[0]);
+          setUsuarioId(perfis[0].id);
+          mostrarToast(`Bem-vindo de volta, ${perfis[0].nome}! 🤙`, 'ok');
           return true;
         }
-
-
-        mostrarToast(
-          'Erro ao cadastrar. Tente novamente!',
-          'erro'
-        );
-
-        return false;
       }
-
-
-      // LOGIN
-
-      let usuarios = await fazerRequisicaoSupabase(
-        'usuario',
-        `nome=eq.${encodeURIComponent(nome)}`
-      );
-
-
-      if (!usuarios) {
-
-        usuarios = await fazerRequisicaoSupabase(
-          'Usuario',
-          `nome=eq.${encodeURIComponent(nome)}`
-        );
-
-      }
-
-
-      if (usuarios && usuarios.length > 0) {
-
-        const user = usuarios[0];
-
-
-        if (user.senha === senha) {
-
-          setUsuario(user);
-          setUsuarioId(user.id);
-
-          localStorage.setItem(
-            'shakaUsuario',
-            JSON.stringify(user)
-          );
-
-          mostrarToast(
-            `Bem-vindo de volta, ${nome}! 🤙`,
-            'ok'
-          );
-
-          return true;
-        }
-
-
-        mostrarToast(
-          'Senha incorreta!',
-          'erro'
-        );
-
-        return false;
-      }
-
-
-      mostrarToast(
-        'Usuário não encontrado! Cadastre-se primeiro.',
-        'erro'
-      );
-
       return false;
-
     },
     [mostrarToast]
   );
 
-
-  const logout = useCallback(() => {
-
-    const novoId = crypto.randomUUID();
-
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    
     setUsuario(null);
-    setUsuarioId(novoId);
+    setUsuarioId(null);
+    localStorage.removeItem('shakaUsuario'); // Por segurança
 
-    localStorage.removeItem('shakaUsuario');
-
-    localStorage.setItem(
-      'shakaUserId',
-      novoId
-    );
-
-    mostrarToast(
-      'Até logo! 🌊',
-      'ok'
-    );
-
+    mostrarToast('Até logo! 🌊', 'ok');
   }, [mostrarToast]);
 
 
