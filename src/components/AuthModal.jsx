@@ -35,17 +35,19 @@ export default function AuthModal({ aberto, onFechar, autenticar }) {
         </div>
 
         <form className="modal-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Nome de usuário</label>
-            <input
-              className="form-input"
-              type="text"
-              placeholder="seu nome"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-            />
-          </div>
+          {modo === 'cadastro' && (
+            <div className="form-group">
+              <label>Nome de usuário</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="seu nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
             <div className="form-group">
               <label>Email</label>
