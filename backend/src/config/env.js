@@ -2,7 +2,7 @@
 
 import 'dotenv/config';
 
-const obrigatorias = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'];
+const obrigatorias = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 
 for (const chave of obrigatorias) {
   if (!process.env[chave]) {
@@ -16,6 +16,5 @@ export const env = {
   port: process.env.PORT || 4000,
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  jwtSecret: process.env.JWT_SECRET,
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
 };

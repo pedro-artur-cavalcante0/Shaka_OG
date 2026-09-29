@@ -1,107 +1,34 @@
-
-
-
-
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from '../config/supabaseClient.js';
-import { env } from '../config/env.js';
-
-const SALT_ROUNDS = 10;
-
-function gerarToken(usuario) {
-  return jwt.sign(
-    { id: usuario.id, nome: usuario.nome, email: usuario.email, role: usuario.role },
-    env.jwtSecret,
-    { expiresIn: '7d' }
-  );
-}
 
 function paraPublico(usuario) {
   const { id, nome, email, foto, role } = usuario;
   return { id, nome, email, foto, role };
 }
 
-export async function registrar(req, res) {
-  const { nome, email, senha } = req.body;
-
-  if (!nome || !email || !senha) {
-    return res.status(400).json({ erro: 'Nome, email e senha são obrigatórios.' });
-  }
-
-  const [porNome, porEmail] = await Promise.all([
-    supabaseAdmin.from('usuario').select('id').eq('nome', nome).limit(1),
-    supabaseAdmin.from('usuario').select('id').eq('email', email).limit(1),
-  ]);
-
-  const erroBusca = porNome.error || porEmail.error;
-  if (erroBusca) {
-    console.error(erroBusca);
-    return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
-  }
-  if (porNome.data.length || porEmail.data.length) {
-    return res.status(409).json({ erro: 'Usuário ou email já cadastrado.' });
-  }
-
-  const senha_hash = await bcrypt.hash(senha, SALT_ROUNDS);
-
-  const { data: novoUsuario, error: erroInsercao } = await supabaseAdmin
-    .from('usuario')
-    .insert({ id: crypto.randomUUID(), nome, email, senha_hash, role: 'user' })
-    .select()
-    .single();
-
-  if (erroInsercao) {
-    console.error(erroInsercao);
-    return res.status(500).json({ erro: 'Erro ao cadastrar usuário.' });
-  }
-
-  const token = gerarToken(novoUsuario);
-  return res.status(201).json({ token, usuario: paraPublico(novoUsuario) });
-}
-
-export async function login(req, res) {
-  const { nome, senha } = req.body;
-
-  if (!nome || !senha) {
-    return res.status(400).json({ erro: 'Nome e senha são obrigatórios.' });
-  }
-
-  const { data: candidatos, error } = await supabaseAdmin
-    .from('usuario')
-    .select('*')
-    .eq('nome', nome);
-
-  if (error) {
-    console.error(error);
-    return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
-  }
-
-  let usuario = null;
-  for (const candidato of candidatos) {
-    if (await bcrypt.compare(senha, candidato.senha_hash || '')) {
-      usuario = candidato;
-      break;
-    }
-  }
-  if (!usuario) return res.status(401).json({ erro: 'Nome ou senha inválidos.' });
-
-  const token = gerarToken(usuario);
-  return res.json({ token, usuario: paraPublico(usuario) });
+async function buscarPerfil(id) {
+  return supabaseAdmin.from('usuario').select('*').eq('id', id).maybeSingle();
 }
 
 export async function eu(req, res) {
-  const { data: usuario, error } = await supabaseAdmin
-    .from('usuario')
-    .select('*')
-    .eq('id', req.usuario.id)
-    .maybeSingle();
+  let { data: usuario, error } = await buscarPerfil(req.usuario.id);
 
-  if (error) {
-    console.error(error);
-    return res.status(500).json({ erro: 'Erro ao consultar usuário.' });
+  if (!error && !usuario) {
+    const { error: erroCriacao } = await supabaseAdmin.from('usuario').upsert(
+      {
+        id: req.usuario.id,
+        nome: req.usuario.nome || req.usuario.email.split('@')[0],
+        email: req.usuario.email,
+        role: 'user',
+      },
+      { onConflict: 'id', ignoreDuplicates: true }
+    );
+    ({ data: usuario, error } = erroCriacao ? { error: erroCriacao } : await buscarPerfil(req.usuario.id));
   }
-  if (!usuario) return res.status(401).json({ erro: 'Sessão inválida ou expirada.' });
+
+  if (error || !usuario) {
+    if (error) console.error(error);
+    return res.status(500).json({ erro: 'Erro ao carregar perfil do usuário.' });
+  }
 
   return res.json({ usuario: paraPublico(usuario) });
 }
