@@ -2,6 +2,21 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Correção para os ícones padrão sumirem no Vercel/Builds de produção
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerIconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerIconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
 export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
   const mapDivRef = useRef(null);
   const mapRef = useRef(null);
@@ -12,8 +27,16 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
     mapRef.current = L.map(mapDivRef.current, {
       scrollWheelZoom: false,
     }).setView([-3.73, -38.52], 11);
+    
     markersLayerRef.current = L.layerGroup().addTo(mapRef.current);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    
+    // Insira sua chave de API aqui se necessário
+    const apiKey = 'cb1_2tsg_1_5902f9ba53b63e5f23bf0328'; 
+    const tileUrl = apiKey 
+      ? `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${apiKey}`
+      : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+
+    L.tileLayer(tileUrl, {
       attribution: '&copy; OpenStreetMap & CARTO',
     }).addTo(mapRef.current);
 
@@ -46,5 +69,5 @@ export default function Map({ praias, onSelecionarPraia, praiaFoco }) {
     }
   }, [praiaFoco]);
 
-  return <div id="map" ref={mapDivRef} />;
+  return <div id="map" ref={mapDivRef} style={{ width: '100%', height: '100%' }} />;
 }

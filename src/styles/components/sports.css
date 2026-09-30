@@ -1,3 +1,6 @@
+/* Garante que padding e borda entram no cálculo da largura (se já existir no seu CSS global, pode remover) */
+*, *::before, *::after { box-sizing: border-box; }
+
 .section-label {
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -54,24 +57,26 @@
 .search-input::placeholder { color: var(--text-3); }
 .search-input:focus { border-color: rgba(45, 212, 191, 0.4); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.08); }
 
-.spots-body { 
-  display: grid; 
-  grid-template-columns: 1fr 480px; 
-  height: calc(100vh - 140px); 
-  min-height: 600px; 
+/* ---------- LAYOUT PRINCIPAL (DESKTOP) ---------- */
+.spots-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 480px;
+  height: calc(100vh - 140px);
+  min-height: 600px;
   transition: grid-template-columns 0.35s ease-in-out;
 }
 
 .spots-body.has-selection {
-  grid-template-columns: 1fr 580px;
+  grid-template-columns: minmax(0, 1fr) 580px;
 }
 
-.spots-map-wrap { position: relative; overflow: hidden; }
+.spots-map-wrap { position: relative; overflow: hidden; min-width: 0; }
 #map { width: 100%; height: 100%; min-height: 600px; }
 
 .sidebar {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   background: var(--bg-surface);
   border-left: 1px solid var(--border);
   overflow-y: auto;
@@ -158,11 +163,55 @@
   margin-top: 6px;
 }
 
-.painel-detalhes { padding: 20px 16px; border-top: 1px solid var(--border); }
+/* ESTILO DA BADGE DE DIFICULDADE */
+.spot-difficulty-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.difficulty-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.spot-difficulty-badge.difficulty-intermediate {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.spot-difficulty-badge.difficulty-intermediate .difficulty-dot {
+  background-color: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+/* ---------- PAINEL DE DETALHES ---------- */
+.painel-detalhes {
+  padding: 20px 16px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
 .painel-detalhes.hidden { display: none; }
 
-.painel-titulo { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
-.painel-titulo h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-1); }
+.painel-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+.painel-titulo h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-1); word-break: break-word; }
 
 .painel-fechar {
   background: none;
@@ -186,10 +235,12 @@
   font-size: 0.83rem;
   color: var(--text-2);
   line-height: 1.5;
+  word-break: break-word;
+  min-width: 0;
 }
 .info-card strong { color: var(--text-1); display: block; margin-bottom: 2px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
-.info-secao { margin-bottom: 20px; }
+.info-secao { margin-bottom: 20px; max-width: 100%; min-width: 0; }
 .info-secao h4 {
   font-size: 0.78rem;
   font-weight: 600;
@@ -214,6 +265,38 @@
 .comentario-item span { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); display: block; margin-bottom: 4px; }
 .comentario-item p { font-size: 0.85rem; color: var(--text-2); }
 
+/* ---------- CLIMA / MARÉ (evita estourar a largura) ---------- */
+.weather-widget,
+.clima-painel,
+.clima-score-wrap,
+.clima-score-bar {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Gráficos e imagens dentro do painel nunca passam do container */
+.painel-detalhes svg,
+.painel-detalhes canvas,
+.painel-detalhes img {
+  max-width: 100%;
+}
+
+/* ---------- CARROSSEL HORIZONTAL DE BOTÕES DE ESPORTE ---------- */
+.deportes-tags {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  white-space: nowrap;
+  gap: 8px;
+  padding-bottom: 6px;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+.deportes-tags > * { flex-shrink: 0; }
+.deportes-tags::-webkit-scrollbar { display: none; }
+
+/* ---------- FORMULÁRIOS E BOTÕES ---------- */
 .form-inline { margin-top: 12px; }
 .form-actions { display: flex; gap: 8px; }
 
@@ -330,61 +413,50 @@
 }
 .btn-ghost-sm:hover { color: var(--text-1); border-color: var(--text-2); }
 
-/* MOBILE RESPONSIVE SPOTS */
+/* =====================================================
+   MOBILE (tudo junto, SEMPRE no fim do arquivo para
+   vencer as regras de desktop sem precisar de !important)
+   ===================================================== */
 @media (max-width: 900px) {
-  .spots-body { grid-template-columns: 1fr; height: auto; }
+  /* Evita scroll horizontal da página inteira (rede de segurança) */
+  html, body { overflow-x: hidden; }
+
+  /* Mesma especificidade do .spots-body.has-selection, e vem depois */
+  .spots-body,
+  .spots-body.has-selection {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
   .spots-map-wrap { height: 55vw; min-height: 300px; }
   #map { min-height: 0; }
+
   .sidebar {
     border-left: none;
     border-top: 1px solid var(--border);
     max-height: none;
     height: auto;
     overflow-y: visible;
-    overflow-x: visible;
+    overflow-x: hidden;
   }
+
   .spots-header { flex-direction: column; align-items: flex-start; padding: 40px 20px 20px; }
   .search-input { width: 100%; }
   .spots-search-wrap { width: 100%; }
+
   .navbar-links { display: none; }
   .navbar { padding: 0 20px; }
+
   .hero-actions { flex-direction: column; align-items: center; }
-  .praia-dados { grid-template-columns: 1fr; }
   .hero { padding-bottom: 48px; }
   .hero-scroll-hint { position: static; transform: none; margin-top: 40px; }
+
   .ocean-layer--back { height: 38%; filter: none; }
   .ocean-layer--mid { height: 28%; }
   .ocean-layer--front { height: 18%; }
-}
 
-/* 1. Permite que os botões de esporte façam scroll horizontal limpo em telas pequenas */
-.weather-widget,
-.info-secao,
-.painel-detalhes {
-  max-width: 100% !important;
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
+  .praia-dados { grid-template-columns: 1fr; }
 
-/* Ajusta o container dos botões de esportes para permitir rolagem sem estourar a tela */
-.deportes-tags, 
-div:has(> button:contains("Stand Up")) {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  white-space: nowrap;
-  gap: 8px;
-  padding-bottom: 6px;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Opcional: oculta a barra de scroll do container de tags no mobile para ficar mais bonito */
-.deportes-tags::-webkit-scrollbar {
-  display: none;
-}
-
-/* 2. Força imagens, gráficos e canvas a respeitarem a largura da tela */
-svg, canvas, img {
-  max-width: 100% !important;
-  height: auto;
+  /* Sem hack de width/margin: o #listaPraias já tem padding de 12px */
+  .card:hover { transform: none; }
 }

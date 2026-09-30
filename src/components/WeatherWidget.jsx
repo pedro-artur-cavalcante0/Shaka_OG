@@ -620,29 +620,35 @@ function WeatherWidgetConteudo({ clima, fontOnda }) {
           </div>
         </div>
 
-        <div className="clima-modalidade-selector">
-          {Object.entries(MODALIDADES).map(([chave, config]) => (
-            <button
-              key={chave}
-              type="button"
-              className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
-              onClick={() => setModalidade(chave)}
-            >
-              <span>{config.emoji}</span> {config.label}
-            </button>
-          ))}
+        {/* Adicionado o wrapper flexível para permitir scroll apenas nos botões no telemóvel */}
+        <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch' }}>
+          <div className="clima-modalidade-selector" style={{ display: 'flex', flexWrap: 'nowrap', width: 'max-content', gap: '8px' }}>
+            {Object.entries(MODALIDADES).map(([chave, config]) => (
+              <button
+                key={chave}
+                type="button"
+                className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
+                onClick={() => setModalidade(chave)}
+              >
+                <span>{config.emoji}</span> {config.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="clima-secao">
+        {/* Adicionado limitador de largura absoluta no contentor do gráfico para forçar resposta do SVG */}
+        <div className="clima-secao" style={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
           <span className="clima-secao-titulo">Maré do dia</span>
-          <GraficoMare
-            mare={clima.mare}
-            mareAlta={clima.mareAlta}
-            mareBaixa={clima.mareBaixa}
-            estimado={clima.mareEstimada}
-            janela={melhorPeriodoAtual}
-            janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
-          />
+          <div style={{ width: '100%', maxWidth: '100%' }}>
+            <GraficoMare
+              mare={clima.mare}
+              mareAlta={clima.mareAlta}
+              mareBaixa={clima.mareBaixa}
+              estimado={clima.mareEstimada}
+              janela={melhorPeriodoAtual}
+              janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
+            />
+          </div>
         </div>
 
     {melhorPeriodoAtual && (
