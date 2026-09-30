@@ -6,6 +6,7 @@ import AvaliacaoForm from './AvaliacaoForm.jsx';
 import SolicitacaoEventoForm from './SolicitacaoEventoForm.jsx';
 import WeatherWidget from './WeatherWidget.jsx';
 import { Star } from 'lucide-react';
+import { paraISOLocal } from '../lib/dataUtil.js';
 
 function Estrelas({ valor }) {
   let s = '';
@@ -16,6 +17,7 @@ function Estrelas({ valor }) {
 export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar, onExigirLogin, mostrarToast }) {
   const [climaCarregando, setClimaCarregando] = useState(true);
   const [clima, setClima] = useState(null);
+  const [dataSelecionada, setDataSelecionada] = useState(paraISOLocal());
   const [analise, setAnalise] = useState(null);
   const [eventos, setEventos] = useState([]);
   const [formAvaliacaoAberto, setFormAvaliacaoAberto] = useState(false);
@@ -24,18 +26,38 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   const [gerandoResumo, setGerandoResumo] = useState(false);
 
   const [formEventoAberto, setFormEventoAberto] = useState(false);
+  const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
 
+  // Ao trocar de praia: volta para hoje e limpa o clima da praia anterior
+  useEffect(() => {
+    setDataSelecionada(paraISOLocal());
+    setClima(null);
+  }, [praia?.id]);
+
+  // Recarrega o clima quando muda a praia OU a data
+  useEffect(() => {
+    if (!praia) return;
+
+    let cancelado = false; // evita resposta antiga sobrescrever a nova
+    setClimaCarregando(true);
+
+    carregarClima(praia.latitude, praia.longitude, dataSelecionada).then((dados) => {
+      if (cancelado) return;
+      setClima(dados);
+      setClimaCarregando(false);
+    });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [praia?.id, dataSelecionada]);
+
+  // Atualiza análise, eventos e comentários quando a praia muda
   useEffect(() => {
     if (!praia) return;
 
     setResumoIA(null);
     setFormEventoAberto(false);
-    setClimaCarregando(true);
-
-    carregarClima(praia.latitude, praia.longitude).then((dados) => {
-      setClima(dados);
-      setClimaCarregando(false);
-    });
 
     fazerRequisicaoSupabase('analisePraia', `id_praia=eq.${praia.id}`).then((data) => {
       setAnalise(data && data.length > 0 ? data[0] : null);
@@ -54,8 +76,6 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
     const data = await fazerRequisicaoSupabase('comentario', `id_praia=eq.${praia.id}&order=data.desc`);
     setComentarios(data || []);
   }
-
-  const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
 
   async function enviarSolicitacaoEvento(dadosFormulario) {
     if (!usuario) {
@@ -80,7 +100,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
     } else {
       mostrarToast('Erro ao enviar solicitação.', 'erro');
     }
-    
+
     setEnviandoSolicitacao(false);
   }
 
@@ -104,7 +124,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
       id_praia: praia.id,
       id_usuario: usuarioId,
       data: new Date().toISOString(),
-      ...dadosAvaliacao
+      ...dadosAvaliacao,
     });
 
     if (ok) {
@@ -133,15 +153,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
       <div className="painel-titulo">
         <div>
           <h3>{praia.nome}</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
-            <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
-            
-            {/* Badge de Dificuldade do Spot */}
-            <div className="spot-difficulty-badge difficulty-intermediate">
-              <span className="difficulty-dot"></span>
-              Nível: Intermediário
-            </div>
-          </div>
+          <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
         </div>
         <button className="painel-fechar" onClick={onFechar}>✕</button>
       </div>
@@ -153,7 +165,12 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
         <div className="info-card"><strong>Longitude</strong>{praia.longitude.toFixed(5)}</div>
       </div>
 
-      <WeatherWidget carregando={climaCarregando} clima={clima} />
+      <WeatherWidget
+        carregando={climaCarregando}
+        clima={clima}
+        data={dataSelecionada}
+        onMudarData={setDataSelecionada}
+      />
 
       <div className="info-secao">
         <h4>⚠ Perigos</h4>
@@ -194,8 +211,8 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
             + Solicitar Criação de Evento
           </button>
         ) : (
-          <SolicitacaoEventoForm 
-            onSubmit={enviarSolicitacaoEvento} 
+          <SolicitacaoEventoForm
+            onSubmit={enviarSolicitacaoEvento}
             onCancel={() => setFormEventoAberto(false)}
             loading={enviandoSolicitacao}
           />
@@ -256,10 +273,10 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
             </div>
           ))
         )}
-        
-        <button 
+
+        <button
           type="button"
-          className="btn-avaliar-praia" 
+          className="btn-avaliar-praia"
           onClick={() => {
             if (!usuario) {
               mostrarToast('Faça login para avaliar!', 'erro');
@@ -276,33 +293,34 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
 
       {formAvaliacaoAberto && (
         <div style={{
-          position: 'fixed', 
+          position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)', 
+          backgroundColor: 'rgba(0,0,0,0.6)',
           zIndex: 9999,
-          display: 'flex', 
-          flexDirection: 'column', 
-          justifyContent: 'flex-end'
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
         }}>
           <div style={{
             backgroundColor: 'var(--bg-panel, #fff)',
-            borderTopLeftRadius: '24px', 
+            borderTopLeftRadius: '24px',
             borderTopRightRadius: '24px',
-            padding: '20px', 
-            maxHeight: '90vh', 
+            padding: '20px',
+            maxHeight: '90vh',
             overflowY: 'auto',
-            boxShadow: '0 -4px 10px rgba(0,0,0,0.1)'
+            boxShadow: '0 -4px 10px rgba(0,0,0,0.1)',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
               <h3 style={{ margin: 0 }}>Avaliar {praia.nome}</h3>
-              <button 
-                onClick={() => setFormAvaliacaoAberto(false)} 
+              <button
+                onClick={() => setFormAvaliacaoAberto(false)}
                 style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', padding: '0 10px' }}
               >
                 ✕
               </button>
             </div>
-            
+
+            {/* O formulário isolado entra aqui */}
             <AvaliacaoForm onSubmit={enviarAvaliacao} loading={false} />
           </div>
         </div>
