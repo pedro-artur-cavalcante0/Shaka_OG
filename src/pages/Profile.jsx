@@ -5,7 +5,7 @@ import {
   enviarFotoUsuario
 } from '../lib/supabase.js';
 
-export default function Perfil({ usuario, onLogout, mostrarToast, atualizarUsuario }) {
+export default function Perfil({ usuario, carregando, onLogout, mostrarToast, atualizarUsuario }) {
   const navigate = useNavigate();
 
   const [nome, setNome] = useState('');
@@ -17,6 +17,8 @@ export default function Perfil({ usuario, onLogout, mostrarToast, atualizarUsuar
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
+    if (carregando) return;
+
     if (!usuario) {
       navigate('/');
       return;
@@ -26,7 +28,7 @@ export default function Perfil({ usuario, onLogout, mostrarToast, atualizarUsuar
     setEmail(usuario.email || '');
     setFoto(usuario.foto || '');
     setPreview(usuario.foto || '');
-  }, [usuario, navigate]);
+  }, [usuario, carregando, navigate]);
 
  async function selecionarFoto(e) {
   const arquivo = e.target.files?.[0];

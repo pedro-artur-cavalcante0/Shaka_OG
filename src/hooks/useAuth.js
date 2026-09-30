@@ -6,6 +6,7 @@ export function useAuth(mostrarToast) {
 
   const [usuario, setUsuario] = useState(null);
   const [usuarioId, setUsuarioId] = useState(null);
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
 
@@ -28,7 +29,7 @@ export function useAuth(mostrarToast) {
       setUsuarioId(novoId);
     }
 
-    restaurarSessao();
+    restaurarSessao().finally(() => setCarregando(false));
 
   }, []);
 
@@ -144,6 +145,7 @@ const autenticar = useCallback(
   return {
     usuario,
     usuarioId,
+    carregando,
     autenticar,
     logout,
     atualizarUsuario
