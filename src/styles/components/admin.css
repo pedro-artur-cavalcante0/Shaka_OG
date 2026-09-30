@@ -1,0 +1,189 @@
+.admin-page {
+  min-height: 100vh;
+  padding: calc(var(--nav-h) + 48px) 24px 90px;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(45, 212, 191, 0.1) 0%, transparent 70%),
+    var(--bg);
+}
+
+.admin-container {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.admin-header { margin-bottom: 28px; }
+
+.admin-titulo {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  letter-spacing: 0.04em;
+  color: var(--text-1);
+}
+
+.admin-subtitulo { color: var(--text-2); margin-top: 4px; }
+
+.admin-abas,
+.admin-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.admin-aba,
+.admin-filtro {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-2);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.admin-aba {
+  padding: 10px 22px;
+  border-radius: var(--r-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.admin-filtro {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.admin-aba:hover,
+.admin-filtro:hover { border-color: var(--border-hover); color: var(--text-1); }
+
+.admin-aba.ativa,
+.admin-filtro.ativo {
+  border-color: var(--teal);
+  color: var(--teal);
+  background: rgba(45, 212, 191, 0.08);
+}
+
+.admin-vazio {
+  color: var(--text-2);
+  text-align: center;
+  padding: 48px 0;
+}
+
+.admin-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0;
+}
+
+.admin-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 20px 22px;
+}
+
+.admin-card-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-card-titulo {
+  color: var(--text-1);
+  font-size: 1.1rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-card-descricao {
+  color: var(--text-2);
+  margin-top: 8px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.admin-status {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.admin-status--pendente,
+.admin-status--em_analise { color: var(--sand); }
+.admin-status--aprovada { color: var(--teal); }
+.admin-status--recusada,
+.admin-status--cancelada { color: #f87171; }
+
+.admin-card-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px 18px;
+  margin: 16px 0 0;
+}
+
+.admin-card-info dt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.admin-card-info dd {
+  margin: 2px 0 0;
+  color: var(--text-1);
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-acao {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-confirmacao { color: var(--text-2); font-size: 0.9rem; }
+
+.admin-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.admin-acao .admin-botoes { margin-top: 0; }
+
+.admin-btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 9px 20px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.admin-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.admin-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.admin-btn--aprovar { background: var(--teal); color: #04121a; }
+.admin-btn--recusar { background: transparent; border-color: #f87171; color: #f87171; }
+.admin-btn--cancelar { background: transparent; border-color: var(--border-hover); color: var(--text-2); }
+
+@media (max-width: 600px) {
+  .admin-page { padding: calc(var(--nav-h) + 28px) 16px 60px; }
+  .admin-card { padding: 16px; }
+  .admin-botoes { justify-content: stretch; }
+  .admin-btn { flex: 1; }
+}
