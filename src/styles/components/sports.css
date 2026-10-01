@@ -1,4 +1,3 @@
-/* Garante que padding e borda entram no cálculo da largura (se já existir no seu CSS global, pode remover) */
 *, *::before, *::after { box-sizing: border-box; }
 
 .section-label {
@@ -32,46 +31,6 @@
   flex-wrap: wrap;
 }
 
-.clima-filtro {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 4px;
-}
-.clima-filtro .clima-dias { flex: 1; min-width: 0; }
-
-.clima-data-input {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: .68rem;
-  letter-spacing: .04em;
-  color: #94a3b8;
-}
-.clima-data-input input {
-  padding: 7px 8px;
-  background: rgba(148,163,184,.08);
-  border: 1px solid rgba(148,163,184,.18);
-  border-radius: 12px;
-  color: #e2e8f0;
-  font: inherit;
-  font-size: .85rem;
-  color-scheme: dark;
-  cursor: pointer;
-}
-.clima-data-input input:focus {
-  outline: none;
-  border-color: #2dd4bf;
-}
-
-@media (max-width: 480px) {
-  .clima-filtro { flex-direction: column; }
-  .clima-filtro .clima-dias { width: 100%; }
-  .clima-data-input { width: 100%; }
-  .clima-data-input input { width: 100%; }
-}
-
 .spots-search-wrap { position: relative; flex-shrink: 0; }
 
 .search-icon {
@@ -98,7 +57,6 @@
 .search-input::placeholder { color: var(--text-3); }
 .search-input:focus { border-color: rgba(45, 212, 191, 0.4); box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.08); }
 
-/* ---------- LAYOUT PRINCIPAL (DESKTOP) ---------- */
 .spots-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 480px;
@@ -204,7 +162,6 @@
   margin-top: 6px;
 }
 
-/* ESTILO DA BADGE DE DIFICULDADE */
 .spot-difficulty-badge {
   display: inline-flex;
   align-items: center;
@@ -234,7 +191,6 @@
   box-shadow: 0 0 6px #f59e0b;
 }
 
-/* ---------- PAINEL DE DETALHES ---------- */
 .painel-detalhes {
   padding: 20px 16px;
   border-top: 1px solid var(--border);
@@ -306,7 +262,7 @@
 .comentario-item span { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); display: block; margin-bottom: 4px; }
 .comentario-item p { font-size: 0.85rem; color: var(--text-2); }
 
-/* ---------- CLIMA / MARÉ (evita estourar a largura) ---------- */
+
 .weather-widget,
 .clima-painel,
 .clima-score-wrap,
@@ -315,14 +271,12 @@
   min-width: 0;
 }
 
-/* Gráficos e imagens dentro do painel nunca passam do container */
 .painel-detalhes svg,
 .painel-detalhes canvas,
 .painel-detalhes img {
   max-width: 100%;
 }
 
-/* ---------- CARROSSEL HORIZONTAL DE BOTÕES DE ESPORTE ---------- */
 .deportes-tags {
   display: flex;
   flex-wrap: nowrap;
@@ -454,15 +408,12 @@
 }
 .btn-ghost-sm:hover { color: var(--text-1); border-color: var(--text-2); }
 
-/* =====================================================
-   MOBILE (tudo junto, SEMPRE no fim do arquivo para
-   vencer as regras de desktop sem precisar de !important)
-   ===================================================== */
+
 @media (max-width: 900px) {
-  /* Evita scroll horizontal da página inteira (rede de segurança) */
+ 
   html, body { overflow-x: hidden; }
 
-  /* Mesma especificidade do .spots-body.has-selection, e vem depois */
+
   .spots-body,
   .spots-body.has-selection {
     grid-template-columns: minmax(0, 1fr);
@@ -498,6 +449,5 @@
 
   .praia-dados { grid-template-columns: 1fr; }
 
-  /* Sem hack de width/margin: o #listaPraias já tem padding de 12px */
   .card:hover { transform: none; }
 }
