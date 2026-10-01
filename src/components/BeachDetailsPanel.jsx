@@ -26,7 +26,6 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   const [gerandoResumo, setGerandoResumo] = useState(false);
 
   const [formEventoAberto, setFormEventoAberto] = useState(false);
-
   const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
 
   // Ao trocar de praia: volta para hoje e limpa o clima da praia anterior
@@ -154,15 +153,7 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
       <div className="painel-titulo">
         <div>
           <h3>{praia.nome}</h3>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px' }}>
-            <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
-            
-            {/* Badge de Dificuldade do Spot */}
-            <div className="spot-difficulty-badge difficulty-intermediate">
-              <span className="difficulty-dot"></span>
-              Nível: Intermediário
-            </div>
-          </div>
+          <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
         </div>
         <button className="painel-fechar" onClick={onFechar}>✕</button>
       </div>
@@ -328,7 +319,8 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
                 ✕
               </button>
             </div>
-            
+
+            {/* O formulário isolado entra aqui */}
             <AvaliacaoForm onSubmit={enviarAvaliacao} loading={false} />
           </div>
         </div>
