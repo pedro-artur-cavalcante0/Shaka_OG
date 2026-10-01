@@ -22,15 +22,10 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
   const [eventos, setEventos] = useState([]);
   const [formAvaliacaoAberto, setFormAvaliacaoAberto] = useState(false);
   const [comentarios, setComentarios] = useState([]);
-  const [comentarioTexto, setComentarioTexto] = useState('');
   const [resumoIA, setResumoIA] = useState(null);
   const [gerandoResumo, setGerandoResumo] = useState(false);
 
   const [formEventoAberto, setFormEventoAberto] = useState(false);
-  const [eventoTitulo, setEventoTitulo] = useState('');
-  const [eventoDescricao, setEventoDescricao] = useState('');
-  const [eventoData, setEventoData] = useState('');
-
   const [enviandoSolicitacao, setEnviandoSolicitacao] = useState(false);
 
   // Ao trocar de praia: volta para hoje e limpa o clima da praia anterior
@@ -95,7 +90,6 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
       ...dadosFormulario,
       id_praia: praia.id,
       id_usuario: usuarioId,
-      // Status = PENDENTE automaticamente
     };
 
     const ok = await fazerRequisicaoSupabase('solicitacao_evento', '', 'POST', payload);
@@ -160,12 +154,6 @@ export default function BeachDetailsPanel({ praia, usuario, usuarioId, onFechar,
         <div>
           <h3>{praia.nome}</h3>
           <span className="badge">{praia.tipo_onda || 'Tipo não informado'}</span>
-
-          {/* Badge de Dificuldade do Spot */}
-          <div className="spot-difficulty-badge difficulty-intermediate">
-            <span className="difficulty-dot"></span>
-            Nível: Intermediário
-          </div>
         </div>
         <button className="painel-fechar" onClick={onFechar}>✕</button>
       </div>

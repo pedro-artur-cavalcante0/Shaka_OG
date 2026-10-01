@@ -67,10 +67,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
     `${linha} L ${pontos[pontos.length - 1].x.toFixed(1)} ${padTop + graphH} ` +
     `L ${pontos[0].x.toFixed(1)} ${padTop + graphH} Z`;
 
-  // ------------------------------------------------------------
-  // Agora (só aparece quando o dia selecionado é hoje)
-  // ------------------------------------------------------------
-
   const horaAtual = new Date().getHours();
 
   let idxAgora = mare.findIndex(p => p.horaIdx === horaAtual);
@@ -517,7 +513,6 @@ export default function WeatherWidget({ carregando, clima, data, onMudarData }) 
     </div>
   );
 }
-
 function WeatherWidgetConteudo({ clima, fontOnda, data }) {
   const ehHoje = data === paraISOLocal();
   const dataLabel = new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', {
@@ -596,41 +591,43 @@ function WeatherWidgetConteudo({ clima, fontOnda, data }) {
         </div>
       </div>
 
-      <div className="clima-modalidade-selector">
-        {Object.entries(MODALIDADES).map(([chave, config]) => (
-          <button
-            key={chave}
-            type="button"
-            className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
-            onClick={() => setModalidade(chave)}
-          >
-            <span>{config.emoji}</span> {config.label}
-          </button>
-        ))}
+      <div style={{ width: '100%', overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch' }}>
+        <div className="clima-modalidade-selector" style={{ display: 'flex', flexWrap: 'nowrap', width: 'max-content', gap: '8px' }}>
+          {Object.entries(MODALIDADES).map(([chave, config]) => (
+            <button
+              key={chave}
+              type="button"
+              className={`clima-modalidade-btn${modalidade === chave ? ' ativo' : ''}`}
+              onClick={() => setModalidade(chave)}
+            >
+              <span>{config.emoji}</span> {config.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="clima-secao">
+      <div className="clima-secao" style={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
         <span className="clima-secao-titulo">
           {ehHoje ? 'Maré do dia' : `Maré · ${dataLabel}`}
         </span>
-        <GraficoMare
-          mare={clima.mare}
-          mareAlta={clima.mareAlta}
-          mareBaixa={clima.mareBaixa}
-          estimado={clima.mareEstimada}
-          janela={melhorPeriodoAtual}
-          janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
-          mostrarAgora={ehHoje}
-        />
+        <div style={{ width: '100%', maxWidth: '100%' }}>
+          <GraficoMare
+            mare={clima.mare}
+            mareAlta={clima.mareAlta}
+            mareBaixa={clima.mareBaixa}
+            estimado={clima.mareEstimada}
+            janela={melhorPeriodoAtual}
+            janelaLabel={`${modalidadeAtual.emoji} MELHOR PRA ${modalidadeAtual.label.toUpperCase()}`}
+            mostrarAgora={ehHoje}
+          />
+        </div>
       </div>
 
       {melhorPeriodoAtual && (
         <div className="clima-melhor-periodo">
-
           <div className="clima-melhor-header">
             <div className="clima-melhor-title-wrap">
               <div className="clima-melhor-icon">{modalidadeAtual.emoji}</div>
-
               <div>
                 <span className="clima-melhor-overline">MELHOR JANELA</span>
                 <span className="clima-melhor-title">
@@ -638,7 +635,6 @@ function WeatherWidgetConteudo({ clima, fontOnda, data }) {
                 </span>
               </div>
             </div>
-
             <div className="clima-melhor-score">
               <strong>{melhorPeriodoAtual.score.toFixed(1)}</strong>
               <span>/10</span>
@@ -647,24 +643,22 @@ function WeatherWidgetConteudo({ clima, fontOnda, data }) {
 
           <div className="clima-melhor-horario">
             <div className="clima-hora">{melhorPeriodoAtual.inicio}</div>
-
+            
             <div className="clima-horario-linha">
               <div className="clima-horario-ponto" />
               <div className="clima-horario-traco" />
               <div className="clima-horario-ponto" />
             </div>
-
+            
             <div className="clima-hora">{melhorPeriodoAtual.fim}</div>
           </div>
 
           <div className="clima-melhor-bottom">
             <span className="clima-melhor-status">{melhorPeriodoAtual.desc}</span>
-
             <span className="clima-melhor-info">
               Janela de {parseInt(melhorPeriodoAtual.fim, 10) - parseInt(melhorPeriodoAtual.inicio, 10)} horas
             </span>
           </div>
-
         </div>
       )}
 
