@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { calcularScore, calcularMelhorPeriodo, MODALIDADES } from '../lib/weather.js';
-import { proximosDias, paraISOLocal } from '../lib/dataUtil.js';
+import { paraISOLocal } from '../lib/dataUtil.js';
 
 function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel, mostrarAgora = true }) {
   if (!mare || mare.length < 2) {
@@ -13,7 +13,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
 
   const W = 640;
   const H = 220;
-
   const padLeft = 42;
   const padRight = 16;
   const padTop = 20;
@@ -27,7 +26,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
   let min = Math.min(...alturas);
   let max = Math.max(...alturas);
 
-  // Adiciona margem visual
   const margem = Math.max((max - min) * 0.18, 0.15);
 
   min -= margem;
@@ -36,12 +34,7 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
   const range = max - min || 1;
 
   const x = i => padLeft + (i / (mare.length - 1)) * graphW;
-
   const y = valor => padTop + graphH - ((valor - min) / range) * graphH;
-
-  // ------------------------------------------------------------
-  // Linha suave
-  // ------------------------------------------------------------
 
   const pontos = mare.map((p, i) => ({
     x: x(i),
@@ -77,23 +70,15 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
 
   const pontoAgora = mostrarAgora ? pontos[idxAgora] : null;
 
-  // ------------------------------------------------------------
-  // Encontrar alta e baixa
-  // ------------------------------------------------------------
-
   const idxAlta = mareAlta
     ? mare.findIndex(
-        p =>
-          p.hora === mareAlta.hora &&
-          Number(p.altura) === Number(mareAlta.altura)
+        p => p.hora === mareAlta.hora && Number(p.altura) === Number(mareAlta.altura)
       )
     : -1;
 
   const idxBaixa = mareBaixa
     ? mare.findIndex(
-        p =>
-          p.hora === mareBaixa.hora &&
-          Number(p.altura) === Number(mareBaixa.altura)
+        p => p.hora === mareBaixa.hora && Number(p.altura) === Number(mareBaixa.altura)
       )
     : -1;
 
@@ -108,28 +93,17 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
     if (idxJanelaFim < 0) idxJanelaFim = mare.length - 1;
   }
 
-  // ------------------------------------------------------------
-  // Linhas de referência
-  // ------------------------------------------------------------
-
   const nivelZero = y(0);
-
-  // horários inferiores
   const quantidadeLabels = Math.min(6, mare.length);
-
   const indicesLabels = [];
 
   for (let i = 0; i < quantidadeLabels; i++) {
-    const indice = Math.round(
-      i * ((mare.length - 1) / (quantidadeLabels - 1 || 1))
-    );
-
+    const indice = Math.round(i * ((mare.length - 1) / (quantidadeLabels - 1 || 1)));
     indicesLabels.push(indice);
   }
 
   return (
     <div className="clima-mare-chart">
-
       <div className="clima-mare-header">
         <div>
           <span className="clima-mare-title">Nível da maré</span>
@@ -163,8 +137,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             </filter>
           </defs>
 
-          {/* Grid horizontal */}
-
           <line
             x1={padLeft}
             y1={y(max)}
@@ -189,8 +161,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             y2={y(min)}
             stroke="rgba(148,163,184,0.10)"
           />
-
-          {/* Janela ideal */}
 
           {idxJanelaIni >= 0 && idxJanelaFim >= idxJanelaIni && (
             <>
@@ -217,11 +187,7 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             </>
           )}
 
-          {/* Área */}
-
           <path d={area} fill="url(#mareGradient)" stroke="none" />
-
-          {/* Linha principal */}
 
           <path
             d={linha}
@@ -232,8 +198,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             strokeLinejoin="round"
             filter="url(#mareGlow)"
           />
-
-          {/* Marcador de maré alta */}
 
           {idxAlta >= 0 && (
             <>
@@ -268,8 +232,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             </>
           )}
 
-          {/* Marcador de maré baixa */}
-
           {idxBaixa >= 0 && (
             <>
               <line
@@ -302,8 +264,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
               </text>
             </>
           )}
-
-          {/* AGORA (somente hoje) */}
 
           {pontoAgora && (
             <>
@@ -349,11 +309,8 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             </>
           )}
 
-          {/* Horários */}
-
           {indicesLabels.map((indice, i) => {
             const p = pontos[indice];
-
             return (
               <text
                 key={i}
@@ -368,8 +325,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             );
           })}
 
-          {/* Valores laterais */}
-
           <text x="4" y={y(max) + 4} fill="#64748b" fontSize="10">
             {max.toFixed(1)}
           </text>
@@ -382,8 +337,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
             {min.toFixed(1)}
           </text>
 
-          {/* Pontos invisíveis para tooltip */}
-
           {pontos.map((p, i) => (
             <circle key={i} cx={p.x} cy={p.y} r="8" fill="transparent">
               <title>
@@ -394,14 +347,10 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
         </svg>
       </div>
 
-      {/* Cards de alta / baixa */}
-
       <div className="clima-mare-extremos">
-
         {mareAlta && (
           <div className="clima-mare-extremo clima-mare-alta">
             <div className="clima-mare-extremo-icon">↑</div>
-
             <div className="clima-mare-extremo-content">
               <span>MARÉ ALTA</span>
               <strong>{Math.abs(mareAlta.altura).toFixed(1)} m</strong>
@@ -413,7 +362,6 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
         {mareBaixa && (
           <div className="clima-mare-extremo clima-mare-baixa">
             <div className="clima-mare-extremo-icon">↓</div>
-
             <div className="clima-mare-extremo-content">
               <span>MARÉ BAIXA</span>
               <strong>{Math.abs(mareBaixa.altura).toFixed(1)} m</strong>
@@ -422,77 +370,15 @@ function GraficoMare({ mare, mareAlta, mareBaixa, estimado, janela, janelaLabel,
           </div>
         )}
       </div>
-
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Seletor de dia
-// ---------------------------------------------------------------------------
-
-// Quantos dias à frente o usuário pode escolher (a Marine API cobre ~7 dias)
-const DIAS_MAX_FUTURO = 7;
-
-function SeletorDia({ data, onMudar }) {
-  const dias = useMemo(() => proximosDias(7), []);
-
-  const limites = useMemo(() => {
-    const max = new Date();
-    max.setDate(max.getDate() + DIAS_MAX_FUTURO);
-    return { min: paraISOLocal(), max: paraISOLocal(max) };
-  }, []);
-
-  function aoEscolherData(e) {
-    const valor = e.target.value; // 'YYYY-MM-DD' ou '' se o campo foi limpo
-    if (!valor) return;
-    if (valor < limites.min || valor > limites.max) return; // ISO compara como texto
-    onMudar(valor);
-  }
-
-  return (
-    <div className="clima-filtro">
-      <div className="clima-dias" role="tablist" aria-label="Escolher dia">
-        {dias.map((d) => (
-          <button
-            key={d.iso}
-            type="button"
-            role="tab"
-            aria-selected={data === d.iso}
-            className={`clima-dia-btn${data === d.iso ? ' ativo' : ''}`}
-            onClick={() => onMudar(d.iso)}
-          >
-            <span className="clima-dia-semana">{d.semana}</span>
-            <strong>{d.dia}</strong>
-          </button>
-        ))}
-      </div>
-
-      <label className="clima-data-input">
-        <span>Data</span>
-        <input
-          type="date"
-          value={data}
-          min={limites.min}
-          max={limites.max}
-          onChange={aoEscolherData}
-        />
-      </label>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Widget principal
-// ---------------------------------------------------------------------------
-
-export default function WeatherWidget({ carregando, clima, data, onMudarData }) {
+export default function WeatherWidget({ carregando, clima, data }) {
   const semDados = !clima || clima.erro;
 
   return (
     <div className="clima-painel">
-      <SeletorDia data={data} onMudar={onMudarData} />
-
       {carregando && semDados ? (
         <div className="clima-loading">
           <span className="loading-spinner" /> Carregando condições...
@@ -513,6 +399,7 @@ export default function WeatherWidget({ carregando, clima, data, onMudarData }) 
     </div>
   );
 }
+
 function WeatherWidgetConteudo({ clima, fontOnda, data }) {
   const ehHoje = data === paraISOLocal();
   const dataLabel = new Date(`${data}T12:00:00`).toLocaleDateString('pt-BR', {
