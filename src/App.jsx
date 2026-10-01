@@ -10,10 +10,11 @@ import Termos from './pages/Termos.jsx';
 import Privacidade from './pages/Privacidade.jsx';
 import Contato from './pages/Contato.jsx';
 import Perfil from './pages/Profile.jsx';
+import Admin from './pages/Admin.jsx';
 
 export default function App() {
   const { toast, mostrarToast } = useToast();
- const {usuario, usuarioId, autenticar, logout, atualizarUsuario} = useAuth(mostrarToast);
+ const {usuario, usuarioId, carregando, autenticar, logout, atualizarUsuario} = useAuth(mostrarToast);
 
   const [praias, setPraias] = useState([]);
   const [servicos, setServicos] = useState([]);
@@ -90,6 +91,7 @@ export default function App() {
     <Layout {...layoutProps}>
       <Perfil
         usuario={usuario}
+        carregando={carregando}
         onLogout={logout}
         mostrarToast={mostrarToast}
         atualizarUsuario={atualizarUsuario}
@@ -97,6 +99,20 @@ export default function App() {
     </Layout>
   }
 />
+
+        <Route
+          path="/admin"
+          element={
+            <Layout {...layoutProps}>
+              <Admin
+                usuario={usuario}
+                carregando={carregando}
+                praias={praias}
+                mostrarToast={mostrarToast}
+              />
+            </Layout>
+          }
+        />
 
         <Route
           path="/termos"

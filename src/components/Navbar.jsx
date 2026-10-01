@@ -69,6 +69,15 @@ export default function Navbar({ usuario, onLoginClick, onLogout }) {
           Serviços
         </a>
 
+        {usuario?.role === 'admin' && (
+          <Link
+            to="/admin"
+            className={`nav-link${location.pathname === '/admin' ? ' active' : ''}`}
+          >
+            Admin
+          </Link>
+        )}
+
       </div>
 
       {usuario ? (
